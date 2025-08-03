@@ -128,7 +128,7 @@ public class Login extends JDialog {
 					PrincipalVisual frame = new PrincipalVisual();
 					dispose();
 					frame.setVisible(true);
-				//};
+				 //};
 				
 			}
 		});
