@@ -9,6 +9,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -141,11 +142,12 @@ public class Login extends JDialog {
 					
 					
 					String consulta = "SELECT Nombre_usuario, Password FROM Usuario WHERE Nombre_usuario = ? AND Password = ?";
-					PreparedStatement sqlCon = Conexion.getConexion().prepareStatement(consulta);
-					sqlCon.setString(1, usuario);
-					sqlCon.setString(2, contrasena);
+					Connection conexion = Conexion.getConexion();
+					PreparedStatement sqlSta = conexion.prepareStatement(consulta);
+					sqlSta.setString(1, usuario);
+					sqlSta.setString(2, contrasena);
 					
-					ResultSet resultado = sqlCon.executeQuery();
+					ResultSet resultado = sqlSta.executeQuery();
 					
 					
 					if(resultado.next()){
