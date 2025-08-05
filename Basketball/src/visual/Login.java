@@ -9,15 +9,21 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
+import SQL.Conexion;
 import logico.User;
 import logico.SerieNacional;
 
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
@@ -37,6 +43,8 @@ public class Login extends JDialog {
 	public static void main(String[] args) {
 	    EventQueue.invokeLater(new Runnable() {
 	        public void run() {
+	        	//Codigo de Archivo(Obsoleto para proyecto)
+	        	/*
 	            FileInputStream serieIn;
 	            FileOutputStream serieOut;
 	            ObjectInputStream serieRead;
@@ -75,7 +83,7 @@ public class Login extends JDialog {
 	                // TODO Auto-generated catch block
 	                e.printStackTrace();
 	            }
-	            
+	            */
 	            try {
 	                Login frame = new Login();
 	                frame.setVisible(true);
@@ -124,11 +132,43 @@ public class Login extends JDialog {
 		btnLogin = new JButton("Login");
 		btnLogin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//if(SerieNacional.getInstance().confirmLogin(txtUser.getText(),txtContra.getText())){
+				
+				//Conectando a la base de datos y validando el usuario en la misma
+				try {
+					char[] contrasenaChars = txtContra.getPassword();
+					String usuario = txtUser.getText();
+					String contrasena = new String(contrasenaChars);
+					
+					
+					String consulta = "SELECT Nombre_usuario, Password FROM Usuario WHERE Nombre_usuario = ? AND Password = ?";
+					PreparedStatement sqlCon = Conexion.getConexion().prepareStatement(consulta);
+					sqlCon.setString(1, usuario);
+					sqlCon.setString(2, contrasena);
+					
+					ResultSet resultado = sqlCon.executeQuery();
+					
+					
+					if(resultado.next()){
+						PrincipalVisual frame = new PrincipalVisual();
+						dispose();
+						frame.setVisible(true);
+					} else {
+						JDialog dialog = new JDialog();
+						dialog.setAlwaysOnTop(true);
+						JOptionPane.showMessageDialog(dialog, "Usuario Invalido", "Error", JOptionPane.ERROR_MESSAGE);
+						dialog.dispose();
+					}
+				
+				} catch(SQLException ex) {
+					JOptionPane.showMessageDialog(null, ex.toString());
+				}
+				/*
+				if(SerieNacional.getInstance().confirmLogin(txtUser.getText(),txtContra.getText())){
 					PrincipalVisual frame = new PrincipalVisual();
 					dispose();
 					frame.setVisible(true);
-				///};
+				};
+				*/
 				
 			}
 		});
