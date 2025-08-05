@@ -26,6 +26,8 @@ import java.sql.SQLException;
 import java.awt.event.ActionEvent;
 import java.awt.Font;
 
+import SQL.DatabaseManager;
+
 public class RegUser extends JDialog {
 
 	private final JPanel contentPanel = new JPanel();
@@ -60,38 +62,38 @@ public class RegUser extends JDialog {
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		contentPanel.setLayout(null);
-		
+
 		JLabel lblNombreUsuario = new JLabel("Nombre Usuario:");
 		lblNombreUsuario.setBounds(12, 13, 97, 14);
 		contentPanel.add(lblNombreUsuario);
-		
+
 		txtUser = new JTextField();
 		txtUser.setBounds(12, 30, 127, 20);
 		contentPanel.add(txtUser);
 		txtUser.setColumns(10);
-		
+
 		comboBox = new JComboBox();
-		comboBox.setModel(new DefaultComboBoxModel(new String[] {"Seleccionar", "Administrador", "Anotador"}));
+		comboBox.setModel(new DefaultComboBoxModel(new String[] { "Seleccionar", "Administrador", "Anotador" }));
 		comboBox.setBounds(12, 80, 127, 20);
 		contentPanel.add(comboBox);
-		
+
 		JLabel lblTipo = new JLabel("Tipo:");
 		lblTipo.setBounds(12, 63, 97, 14);
 		contentPanel.add(lblTipo);
-		
+
 		txtPass = new JTextField();
 		txtPass.setBounds(182, 30, 147, 20);
 		contentPanel.add(txtPass);
 		txtPass.setColumns(10);
-		
+
 		JLabel lblPassword = new JLabel("Password:");
 		lblPassword.setBounds(181, 13, 97, 14);
 		contentPanel.add(lblPassword);
-		
+
 		JLabel lblConfirmarPassword = new JLabel("Confirmar Password:");
 		lblConfirmarPassword.setBounds(181, 63, 167, 14);
 		contentPanel.add(lblConfirmarPassword);
-		
+
 		txtPassConfirm = new JPasswordField();
 		txtPassConfirm.setColumns(10);
 		txtPassConfirm.setBounds(182, 80, 147, 20);
@@ -105,71 +107,37 @@ public class RegUser extends JDialog {
 				okButton.setFont(new Font("Tahoma", Font.BOLD, 13));
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						//User usuarioEncontrado = SerieNacional.getInstance().buscarUser(txtUser.getText());
-						boolean usuarioEncontrado = false;
-						Connection conexion = Conexion.getConexion(); //Conectando a la base de datos
 						String usuario = txtUser.getText();
 						String contrasena = txtPass.getText();
 						String tipo_Usuario = comboBox.getSelectedItem().toString();
-						
-						
-						try {
-							
-							//Validando que el id del no este registrado
-							String consultaValidarUser = "SELECT Nombre_usuario FROM Usuario WHERE Nombre_usuario = ?";
-							PreparedStatement sqlCon = conexion.prepareStatement(consultaValidarUser);
-							sqlCon.setString(1, usuario);
-							
-							ResultSet resultado = sqlCon.executeQuery();
-							usuarioEncontrado = resultado.next(); // Si encontro el Usuario
-									
-						
-							if (!usuarioEncontrado)
-							{
-								if (datosCompletos())
-								{
-									/*
-									User user = new User(comboBox.getSelectedItem().toString(),txtUser.getText(),txtPass.getText());
-								    SerieNacional.getInstance().regUser(user);
-								    OperacionExitosa operacion = new OperacionExitosa();
-								    operacion.setVisible(true);
-								    operacion.setModal(true);
-								    dispose();
-								    */
-									//Insertar nuevo usuario registrado
-								    String consultaRegistrarUsuario = "INSERT INTO Usuario (Nombre_usuario, Password, Tipo) VALUES (?, ?, ?)";
-									sqlCon = conexion.prepareStatement(consultaRegistrarUsuario);
-									sqlCon.setString(1, usuario);
-									sqlCon.setString(2, contrasena);
-									sqlCon.setString(3, tipo_Usuario);
-																		
-									int filasAfectadas = sqlCon.executeUpdate();
-						            
-						            if (filasAfectadas > 0) {
-										new OperacionEspecifica("Se ha registrado con exito").setVisible(true);
-						                dispose();
-						            } else {
-						                new OperacionEspecifica("No se pudo registrar el usuario");
-						            }
+
+						// Validar nombre de usuario
+						boolean usuarioEncontrado = DatabaseManager.validarNombreUsuario(usuario);
+
+						if (!usuarioEncontrado) {
+							if (datosCompletos()) {
+								
+								// Insertar nuevo usuario registrado
+								boolean regUsuario = DatabaseManager.registrarUsuario(usuario, contrasena,
+										tipo_Usuario);
+
+								if (regUsuario) {
+									new OperacionEspecifica("Se ha registrado con exito").setVisible(true);
+									dispose();
+								} else {
+									new OperacionEspecifica("No se pudo registrar el usuario");
 								}
-								else
-								{
-									OperacionEspecifica operacion = new OperacionEspecifica("Rellene todos los campos.");
-								    operacion.setVisible(true);
-								    operacion.setModal(true);
-								}
+							} else {
+								OperacionEspecifica operacion = new OperacionEspecifica("Rellene todos los campos.");
+								operacion.setVisible(true);
+								operacion.setModal(true);
 							}
-							else
-							{
-								OperacionEspecifica operacion = new OperacionEspecifica("Nombre de usuario en uso");
-							    operacion.setVisible(true);
-							    operacion.setModal(true);
-							}
-							
-						} catch(SQLException ex) {
-							JOptionPane.showMessageDialog(null, ex.toString());
+						} else {
+							OperacionEspecifica operacion = new OperacionEspecifica("Nombre de usuario en uso");
+							operacion.setVisible(true);
+							operacion.setModal(true);
 						}
-							
+
 					}
 				});
 				okButton.setActionCommand("Registrar");
@@ -189,15 +157,11 @@ public class RegUser extends JDialog {
 			}
 		}
 	}
-	
+
 	private boolean datosCompletos() {
-	    return !txtUser.getText().trim().isEmpty()
-	        && !txtPass.getText().trim().isEmpty()
-	        && !txtPassConfirm.getText().trim().isEmpty()
-	        && comboBox.getSelectedItem() != null
-	        && !comboBox.getSelectedItem().toString().equals("Seleccione")
-	        && txtPass.getText().equals(txtPassConfirm.getText());
+		return !txtUser.getText().trim().isEmpty() && !txtPass.getText().trim().isEmpty()
+				&& !txtPassConfirm.getText().trim().isEmpty() && comboBox.getSelectedItem() != null
+				&& !comboBox.getSelectedItem().toString().equals("Seleccione")
+				&& txtPass.getText().equals(txtPassConfirm.getText());
 	}
 }
-
-
