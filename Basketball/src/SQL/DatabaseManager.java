@@ -121,6 +121,52 @@ public class DatabaseManager {
 	}
     
     
+    //Obtiene un equipo por su ID desde la base de datos
+    public static Equipo obtenerEquipoPorId(String id) {
+        String sql = "SELECT id, Nombre, Anio_fundacion, Pais, Entrenador, Propetario, foto_path FROM Equipo WHERE id = ?";
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setString(1, id);
+            ResultSet rs = ps.executeQuery();
+            
+            if (rs.next()) {
+                Equipo equipo = new Equipo();
+                equipo.setId(rs.getString("id"));
+                equipo.setNombre(rs.getString("Nombre"));
+                equipo.setAnoFundacion(rs.getInt("Anio_fundacion"));
+                equipo.setPais(rs.getString("Pais"));
+                equipo.setEntrenador(rs.getString("Entrenador"));
+                equipo.setDueno(rs.getString("Propetario")); // Nota: en tu BD es "Propetario"
+                equipo.setFotoPath(rs.getString("foto_path"));
+                return equipo;
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error al consultar equipo: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        return null;
+    }
     
+    // Obtiene un jugador por su ID desde la base de datos
+    public static Equipo obtenerEquipoPorId(String id) {
+        String sql = "SELECT id, Nombre, Anio_fundacion, Pais, Entrenador, Propetario, foto_path FROM Equipo WHERE id = ?";
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setString(1, id);
+            ResultSet rs = ps.executeQuery();
+            
+            if (rs.next()) {
+                Equipo equipo = new Equipo();
+                equipo.setId(rs.getString("id"));
+                equipo.setNombre(rs.getString("Nombre"));
+                equipo.setAnoFundacion(rs.getInt("Anio_fundacion"));
+                equipo.setPais(rs.getString("Pais"));
+                equipo.setEntrenador(rs.getString("Entrenador"));
+                equipo.setDueno(rs.getString("Propetario")); // Nota: en tu BD es "Propetario"
+                equipo.setFotoPath(rs.getString("foto_path"));
+                return equipo;
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error al consultar equipo: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        return null;
+    }
     
 }
