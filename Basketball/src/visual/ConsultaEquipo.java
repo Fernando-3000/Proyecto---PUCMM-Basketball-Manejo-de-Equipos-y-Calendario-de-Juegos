@@ -1,254 +1,231 @@
- package visual;
+package visual;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.ArrayList;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JSpinner;
 import javax.swing.JTextField;
-import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
-import logico.Equipo;
-import logico.SerieNacional;
+
+import util.Conexion; // Asegúrate de que esta clase exista y funcione
 
 public class ConsultaEquipo extends JDialog {
     private final JPanel contentPanel = new JPanel();
     private JTextField txtId;
     private JTextField txtNombre;
-    private JTextField txtEntrenador; // Nuevo campo para el entrenador
-    private JTextField txtDueno;    // Nuevo campo para el dueño
-    private JLabel lblId;
-    private JLabel lblNombre;
-    private JLabel lblAnoFund;
-    private JLabel ldlPais;
-    private JLabel lblEntrenador;
-    private JLabel lblDueno;
-    private JLabel lblFoto;
-    private JPanel panel;
-    private JButton cancelButton;
-    private File selectedFile = null;
+    private JTextField txtEntrenador;
+    private JTextField txtDueno;
     private JTextField cmbxPais;
     private JTextField spnAnoFund;
+    private JLabel lblFoto;
+    private JPanel panel;
     private JButton btnVerJugadores;
     private JButton btnVerEstadisticas;
+    private File selectedFile;
 
     /**
-     * Launch the application.
+      Constructor: recibe solo el ID del equipo y consulta la BD
      */
-    public static void main(String[] args) {
-        try {
-            ConsultaEquipo dialog = new ConsultaEquipo(null);
-            dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-            dialog.setVisible(true);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Create the dialog.
-     */
-    public ConsultaEquipo(Equipo aux) {
-    	setResizable(false);
-    	setModal(true);
+    public ConsultaEquipo(String idEquipo) {
+        setModal(true);
         setTitle("Consultar Equipo");
         setBounds(100, 100, 502, 461);
+        setResizable(false);
         getContentPane().setLayout(new BorderLayout());
         contentPanel.setBackground(Color.WHITE);
         contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
         getContentPane().add(contentPanel, BorderLayout.CENTER);
         setLocationRelativeTo(null);
+        contentPanel.setLayout(null);
 
-        // ID Label and TextField
-        lblId = new JLabel("Id:");
+        // --- Etiquetas y campos ---
+        JLabel lblId = new JLabel("Id:");
         lblId.setBounds(66, 17, 16, 16);
+        contentPanel.add(lblId);
+
         txtId = new JTextField();
         txtId.setBounds(88, 13, 388, 22);
         txtId.setEditable(false);
         txtId.setColumns(10);
+        contentPanel.add(txtId);
 
-        // Nombre Label and TextField
-        lblNombre = new JLabel("Nombre:");
+        JLabel lblNombre = new JLabel("Nombre:");
         lblNombre.setBounds(31, 43, 50, 16);
+        contentPanel.add(lblNombre);
+
         txtNombre = new JTextField();
-        txtNombre.setEditable(false);
         txtNombre.setBounds(88, 40, 179, 22);
+        txtNombre.setEditable(false);
         txtNombre.setColumns(10);
+        contentPanel.add(txtNombre);
 
-        // Año de Fundación Label and Spinner
-        lblAnoFund = new JLabel("Año de fundación:");
+        JLabel lblAnoFund = new JLabel("Año de fundación:");
         lblAnoFund.setBounds(277, 42, 105, 16);
+        contentPanel.add(lblAnoFund);
 
-        // Ciudad Label and ComboBox
-        ldlPais = new JLabel("Pa\u00EDs:");
+        spnAnoFund = new JTextField();
+        spnAnoFund.setBounds(385, 40, 90, 22);
+        spnAnoFund.setEditable(false);
+        spnAnoFund.setColumns(10);
+        contentPanel.add(spnAnoFund);
+
+        JLabel ldlPais = new JLabel("País:");
         ldlPais.setBounds(54, 72, 28, 16);
+        contentPanel.add(ldlPais);
 
-        // Entrenador Label and TextField
-        lblEntrenador = new JLabel("Entrenador:");
+        cmbxPais = new JTextField();
+        cmbxPais.setBounds(88, 66, 388, 22);
+        cmbxPais.setEditable(false);
+        cmbxPais.setColumns(10);
+        contentPanel.add(cmbxPais);
+
+        JLabel lblEntrenador = new JLabel("Entrenador:");
         lblEntrenador.setBounds(14, 95, 68, 16);
+        contentPanel.add(lblEntrenador);
+
         txtEntrenador = new JTextField();
-        txtEntrenador.setEditable(false);
         txtEntrenador.setBounds(88, 92, 155, 22);
+        txtEntrenador.setEditable(false);
         txtEntrenador.setColumns(10);
+        contentPanel.add(txtEntrenador);
 
-        // Dueño Label and TextField
-        lblDueno = new JLabel("Dueño:");
+        JLabel lblDueno = new JLabel("Dueño:");
         lblDueno.setBounds(259, 95, 50, 16);
-        txtDueno = new JTextField();
-        txtDueno.setEditable(false);
-        txtDueno.setBounds(305, 92, 171, 22);
-        txtDueno.setColumns(10);
+        contentPanel.add(lblDueno);
 
-        // Foto del emblema Label and Panel
+        txtDueno = new JTextField();
+        txtDueno.setBounds(305, 92, 171, 22);
+        txtDueno.setEditable(false);
+        txtDueno.setColumns(10);
+        contentPanel.add(txtDueno);
+
         lblFoto = new JLabel("Foto del emblema:");
         lblFoto.setBounds(21, 120, 113, 16);
+        contentPanel.add(lblFoto);
+
         panel = new JPanel();
         panel.setBounds(11, 141, 225, 223);
         panel.setBackground(Color.WHITE);
         panel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1, true));
         panel.setLayout(null);
-        JLabel imageDisplayLabel = new JLabel("No hay imagen seleccionada", SwingConstants.CENTER);
-        imageDisplayLabel.setBounds(10, 10, 205, 203);
-        imageDisplayLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        panel.add(imageDisplayLabel);
-        
-        // Agregar botones para ver listado de lesiones y estadísticas
+        JLabel imageLabel = new JLabel("Sin imagen", SwingConstants.CENTER);
+        imageLabel.setBounds(10, 10, 205, 203);
+        panel.add(imageLabel);
+        contentPanel.add(panel);
+
+        // --- Botones ---
         btnVerJugadores = new JButton("Ver Listado de Jugadores");
-        btnVerJugadores.setBounds(259, 141, 216, 70); // Posición y tamaño del botón
-        btnVerJugadores.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                ListadoJugadores listado = new ListadoJugadores(aux);
-                listado.setVisible(true);
-                listado.setModal(true);
-            }
+        btnVerJugadores.setBounds(259, 141, 216, 70);
+        btnVerJugadores.addActionListener(e -> {
+            new ListadoJugadores(idEquipo).setVisible(true);
         });
         contentPanel.add(btnVerJugadores);
 
+        JButton btnVerListadoDe = new JButton("Ver Listado de juego");
+        btnVerListadoDe.setBounds(259, 219, 216, 70);
+        btnVerListadoDe.addActionListener(e -> {
+            new ListadoJuegos(idEquipo).setVisible(true);
+        });
+        contentPanel.add(btnVerListadoDe);
+
         btnVerEstadisticas = new JButton("Ver Estadísticas");
-        btnVerEstadisticas.setBounds(259, 294, 216, 70); // Posición y tamaño del botón
-        btnVerEstadisticas.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            	ConsultaEstEquipo consulta = new ConsultaEstEquipo(aux);
-                consulta.setVisible(true);
-                consulta.setModal(true);
-            }
+        btnVerEstadisticas.setBounds(259, 294, 216, 70);
+        btnVerEstadisticas.addActionListener(e -> {
+            new ConsultaEstEquipo(idEquipo).setVisible(true);
         });
         contentPanel.add(btnVerEstadisticas);
 
-        // Add components to contentPanel
-        contentPanel.setLayout(null);
-        contentPanel.add(lblId);
-        contentPanel.add(txtId);
-        contentPanel.add(lblNombre);
-        contentPanel.add(txtNombre);
-        contentPanel.add(lblAnoFund);
-        contentPanel.add(ldlPais);
-        contentPanel.add(lblEntrenador);
-        contentPanel.add(txtEntrenador);
-        contentPanel.add(lblDueno);
-        contentPanel.add(txtDueno);
-        contentPanel.add(panel);
-        contentPanel.add(lblFoto);
-        
-        cmbxPais = new JTextField();
-        cmbxPais.setEditable(false);
-        cmbxPais.setColumns(10);
-        cmbxPais.setBounds(88, 66, 388, 22);
-        contentPanel.add(cmbxPais);
-        
-        spnAnoFund = new JTextField();
-        spnAnoFund.setEditable(false);
-        spnAnoFund.setColumns(10);
-        spnAnoFund.setBounds(385, 40, 90, 22);
-        contentPanel.add(spnAnoFund);
-        
-        JButton btnVerListadoDe = new JButton("Ver Listado de juego");
-        btnVerListadoDe.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent arg0) {
-        		ListadoJuegos listado = new ListadoJuegos(aux.getId());
-        		listado.setVisible(true);
-        		listado.setModal(true);
-        	}
-        });
-        btnVerListadoDe.setBounds(259, 219, 216, 70);
-        contentPanel.add(btnVerListadoDe);
-
-        // Buttons Pane
+        // --- Botón Volver ---
         JPanel buttonPane = new JPanel();
         buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
         getContentPane().add(buttonPane, BorderLayout.SOUTH);
-        
-        // Cancelar Button
-        cancelButton = new JButton("Volver");
+
+        JButton cancelButton = new JButton("Volver");
         cancelButton.setFont(new Font("Tahoma", Font.BOLD, 13));
-        cancelButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-            }
-        });
-        cancelButton.setActionCommand("Cancel");
+        cancelButton.addActionListener(e -> dispose());
         buttonPane.add(cancelButton);
 
-        loadEquipo(aux);
-    }
-
-    private void loadEquipo(Equipo aux) {
-        if (aux != null) {
-            txtId.setText(aux.getId());
-            txtNombre.setText(aux.getNombre());
-            txtEntrenador.setText(aux.getEntrenador());
-            txtDueno.setText(aux.getDueno());
-            cmbxPais.setText(aux.getPais());
-			spnAnoFund.setText(Integer.toString(aux.getAnoFundacion()));
-            selectedFile = aux.getFoto();
-            if (selectedFile != null) {
-                displayImage(selectedFile);
-            } else {
-                panel.removeAll();
-                JLabel imageDisplayLabel = new JLabel("No hay imagen disponible", SwingConstants.CENTER);
-                imageDisplayLabel.setBounds(10, 10, 205, 203);
-                imageDisplayLabel.setHorizontalAlignment(SwingConstants.CENTER);
-                panel.add(imageDisplayLabel);
-            }
+        //  Cargar datos desde SQL
+        if (idEquipo != null && !idEquipo.trim().isEmpty()) {
+            cargarDesdeBD(idEquipo);
+        } else {
+            javax.swing.JOptionPane.showMessageDialog(this, "ID de equipo no válido.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+            dispose();
         }
     }
 
-    
-    private void displayImage(File file) {
-        try {
-            ImageIcon icon = new ImageIcon(file.getPath());
-            if (icon.getIconWidth() > 200 || icon.getIconHeight() > 200) {
-                Image img = icon.getImage();
-                Image scaledImg = img.getScaledInstance(200, -1, Image.SCALE_SMOOTH);
-                icon = new ImageIcon(scaledImg);
+    /**
+     Este metodo que consulta la base de datos
+     */
+    private void cargarDesdeBD(String idEquipo) {
+        String sql = "SELECT id, nombre, anoFundacion, pais, entrenador, dueno, foto_path FROM Equipo WHERE id = ?";
+        try (Connection con = Conexion.getInstancia().getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, idEquipo);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                txtId.setText(rs.getString("id"));
+                txtNombre.setText(rs.getString("nombre"));
+                spnAnoFund.setText(String.valueOf(rs.getInt("anoFundacion")));
+                cmbxPais.setText(rs.getString("pais"));
+                txtEntrenador.setText(rs.getString("entrenador"));
+                txtDueno.setText(rs.getString("dueno"));
+
+                String ruta = rs.getString("foto_path");
+                if (ruta != null && !ruta.isEmpty()) {
+                    selectedFile = new File(ruta);
+                    mostrarImagen(selectedFile);
+                } else {
+                    panel.removeAll();
+                    panel.add(new JLabel("Sin imagen", SwingConstants.CENTER));
+                    panel.revalidate();
+                    panel.repaint();
+                }
+            } else {
+                javax.swing.JOptionPane.showMessageDialog(this, "Equipo no encontrado: " + idEquipo, "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+                dispose();
             }
-            panel.removeAll();
-            JLabel imageDisplayLabel = new JLabel(icon);
-            imageDisplayLabel.setBounds(10, 10, 205, 203);
-            panel.add(imageDisplayLabel);
         } catch (Exception e) {
             e.printStackTrace();
-            panel.removeAll();
-            JLabel imageDisplayLabel = new JLabel("Error al cargar la imagen", SwingConstants.CENTER);
-            imageDisplayLabel.setBounds(10, 10, 205, 203);
-            panel.add(imageDisplayLabel);
+            javax.swing.JOptionPane.showMessageDialog(this, "Error al conectar con la base de datos.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+            dispose();
         }
+    }
+
+    /**
+     Aqiu muestra la imagen en el panel
+     */
+    private void mostrarImagen(File file) {
+        panel.removeAll();
+        try {
+            ImageIcon icon = new ImageIcon(file.getAbsolutePath());
+            Image img = icon.getImage();
+            Image scaled = img.getScaledInstance(205, 203, Image.SCALE_SMOOTH);
+            JLabel label = new JLabel(new ImageIcon(scaled));
+            label.setBounds(0, 0, 205, 203);
+            panel.add(label);
+        } catch (Exception e) {
+            JLabel label = new JLabel("Error al cargar", SwingConstants.CENTER);
+            label.setBounds(0, 0, 205, 203);
+            panel.add(label);
+        }
+        panel.revalidate();
+        panel.repaint();
     }
 }
