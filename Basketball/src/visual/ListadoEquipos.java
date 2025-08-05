@@ -241,6 +241,8 @@ public class ListadoEquipos extends JDialog {
     	
     	model.setRowCount(0);
         row = new Object[model.getColumnCount()];
+        
+        //Usando metodo para listar equipo en la base de datos
         ArrayList<Equipo> equipos = SerieNacional.getInstance().getMisEquipos();
         
         for(Equipo equipo : equipos) {
