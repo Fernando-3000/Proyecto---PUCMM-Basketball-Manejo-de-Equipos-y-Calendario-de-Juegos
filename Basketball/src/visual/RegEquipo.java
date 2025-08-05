@@ -15,6 +15,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +30,7 @@ import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
@@ -32,6 +38,7 @@ import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import SQL.Conexion;
 import logico.Equipo;
 import logico.Juego;
 import logico.Jugador;
@@ -66,7 +73,7 @@ public class RegEquipo extends JDialog {
 	private JLabel lblDueno;
 	private JButton okButton;
 	private JButton cancelButton;
-
+	private Connection conexion; // Conexion
 	/**
 	 * Launch the application.
 	 */
@@ -84,6 +91,10 @@ public class RegEquipo extends JDialog {
 	 * Create the dialog.
 	 */
 	public RegEquipo(Equipo aux) {
+		//Conectando a servidor
+		
+		conexion = Conexion.getConexion();//Tomando la conexion
+
 		setResizable(false);
 		setModal(true);
 		setTitle("Registrar Equipo");
@@ -100,7 +111,7 @@ public class RegEquipo extends JDialog {
 			txtId = new JTextField();
 			txtId.setBounds(88, 13, 388, 22);
 			txtId.setEditable(false);
-			txtId.setText("EQ-"+SerieNacional.getInstance().getGeneradorEquipo());
+			txtId.setText(obtenerProximoIdEquipo()); //utiliza la funcion para obtener el proximo ID
 			txtId.setColumns(10);
 		}
 		{
@@ -247,8 +258,14 @@ public class RegEquipo extends JDialog {
 						if (aux == null) {
 							if (datosCompletos())
 							{
-							    String pais = cmbxPais.getSelectedItem() != null ? 
-							        cmbxPais.getSelectedItem().toString() : "Seleccionar";
+								//String id_Equipo = txtId.getText();
+							    String nombre =  txtNombre.getText();
+							    int anio_fundacion = Integer.parseInt(spnAnoFund.getValue().toString());
+							    String pais = cmbxPais.getSelectedItem() != null ? cmbxPais.getSelectedItem().toString() : "Seleccionar";
+							    String entrenador =  txtEntrenador.getText();
+							    String propetario = txtDueno.getText();
+							    
+							    
 							    
 							    ArrayList<Juego> misJuegos = new ArrayList<Juego>();
 							    ArrayList<Jugador> misJugadores = new ArrayList<Jugador>();
@@ -258,22 +275,31 @@ public class RegEquipo extends JDialog {
 					                fotoGuardada = copiarImagenADirectorioApp(selectedFile, txtId.getText());
 					            }
 							    
-							    Equipo equipo = new Equipo(txtId.getText(),
-							                             txtNombre.getText(),
-							                             txtEntrenador.getText(),
-							                             pais,
-							                             Integer.parseInt(spnAnoFund.getValue().toString()),
-							                             txtDueno.getText(),
-							                             fotoGuardada,
-							                             misJuegos,
-							                             misJugadores);
-							    
-							    SerieNacional.getInstance().guardarEquipo(equipo);
-							    ListadoEquipos.loadAll(null);
-							    OperacionExitosa operacion = new OperacionExitosa();
-							    operacion.setVisible(true);
-							    operacion.setModal(true);
-							    clean();
+					            //Guardar Equipo en Base de datos
+					            String consultaRegistrarEquipo = "INSERT INTO Equipo (Nombre, Anio_fundacion, Pais, Entrenador, Propetario) VALUES (?, ?, ?, ?, ?)";
+					            PreparedStatement sql;
+								try {
+									sql = conexion.prepareStatement(consultaRegistrarEquipo);
+									sql.setString(1, nombre);
+									sql.setInt(2, anio_fundacion);
+									sql.setString(3, pais);
+									sql.setString(4, entrenador);
+									sql.setString(5, propetario);
+									
+									int filasAfectadas = sql.executeUpdate();
+									
+									if (filasAfectadas > 0) {
+										new OperacionEspecifica("Se ha registrado con exito").setVisible(true);
+										clean();
+									} else {
+										new OperacionEspecifica("No se pudo registrar el usuario");
+									}
+								} catch (SQLException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+
+							    clean();//Limpia los campos de texto y se manda la conexion para que renueve el id
 							}
 							else
 							{
@@ -323,8 +349,22 @@ public class RegEquipo extends JDialog {
 		loadEquipo(aux);
 	}
 	
+	
+	//Dispose para cerrar conexion cuando se cierra el dialogo
+	@Override
+    public void dispose() {
+        try {
+            if (conexion != null && !conexion.isClosed()) {
+                conexion.close(); // Cierra la conexiÃ³n al cerrar el dialogo
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        super.dispose(); // Llama al dispose() original de JDialog
+        
+    }
 	/**
-	 * Actualiza el texto del botón según si hay imagen seleccionada o no
+	 * Actualiza el texto del boton segun si hay imagen seleccionada o no
 	 */
 	private void updateButtonText() {
 		if (selectedFile != null) {
@@ -335,7 +375,7 @@ public class RegEquipo extends JDialog {
 	}
 	
 	/**
-	 * Muestra un diálogo para seleccionar una imagen
+	 * Muestra un dialogo para seleccionar una imagen
 	 */
 	private void selectImage() {
 		JFileChooser fileChooser = new JFileChooser();
@@ -370,7 +410,7 @@ public class RegEquipo extends JDialog {
 			imageDisplayLabel.setText("");
 			
 			photoLabel.setIcon(null);
-			photoLabel.setText("Arrastra una imagen aquí");
+			photoLabel.setText("Arrastra una imagen aqui");
 		} catch (Exception e) {
 			e.printStackTrace();
 			imageDisplayLabel.setIcon(null);
@@ -445,8 +485,7 @@ public class RegEquipo extends JDialog {
 	}
 	
 	private void clean() {
-	    SerieNacional.getInstance();
-		txtId.setText("EQ-"+SerieNacional.getInstance().getGeneradorEquipo());
+		txtId.setText(obtenerProximoIdEquipo());
 	    txtNombre.setText("");
 	    txtEntrenador.setText("");
 	    txtDueno.setText("");
@@ -464,5 +503,24 @@ public class RegEquipo extends JDialog {
 	        && !cmbxPais.getSelectedItem().toString().equals("Seleccionar")
 	        && !txtEntrenador.getText().trim().isEmpty()
 	        && !txtDueno.getText().trim().isEmpty();
+	}
+	
+	public String obtenerProximoIdEquipo() {
+	    String proximoId = "EQ-1"; // Valor por defecto
+	    String consulta = "SELECT 'EQ-' + CAST(ISNULL(IDENT_CURRENT('Equipo'), 0) + 1 AS VARCHAR) AS ProximoID";
+
+	    try {
+	    	Statement sql = this.conexion.createStatement();
+	        ResultSet resultado = sql.executeQuery(consulta);
+	        
+	        if (resultado.next()) {
+	            proximoId = resultado.getString("ProximoID");
+	        }
+	        
+	    } catch(SQLException ex) {
+			JOptionPane.showMessageDialog(null, ex.toString());
+		}
+	    
+	    return proximoId;
 	}
 }
