@@ -124,7 +124,7 @@ public class ListadoUsuarios extends JDialog {
             }
         });
         
-        searchPanel.add(new JLabel("Barra de búsqueda:   "), BorderLayout.WEST);
+        searchPanel.add(new JLabel("Barra de busqueda:   "), BorderLayout.WEST);
         searchPanel.add(searchField, BorderLayout.CENTER);
         contentPanel.add(searchPanel, BorderLayout.NORTH);
 
