@@ -69,7 +69,8 @@ public class ConsultaJugador extends JDialog {
         txtNumero.setEditable(false);
         panel.add(lblNumero); panel.add(txtNumero);
         y += dy;
-
+    
+        
         // Equipo
         JLabel lblEquipo = new JLabel("Equipo ID:");
         lblEquipo.setBounds(xLabel, y, 100, 25);
