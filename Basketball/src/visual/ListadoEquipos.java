@@ -98,7 +98,7 @@ public class ListadoEquipos extends JDialog {
             }
         });
         
-        searchPanel.add(new JLabel("Barra de b�squeda:   "), BorderLayout.WEST);
+        searchPanel.add(new JLabel("Barra de busqueda:   "), BorderLayout.WEST);
         searchPanel.add(searchField, BorderLayout.CENTER);
         
         String[] columnNames = {"ID", "Equipo", "Entrenador", "Ciudad", "Cant. Juegos"};

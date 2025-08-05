@@ -1,12 +1,16 @@
 package SQL;
 
+import java.lang.reflect.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 import javax.swing.JOptionPane;
+
+import logico.Equipo;
 
 public class DatabaseManager {
 	
@@ -96,9 +100,8 @@ public class DatabaseManager {
     public static boolean registrarEquipo(String nombre, int anio_fundacion, String pais, String entrenador, String propetario) {
 		try {
 			String consultaRegistrarEquipo = "INSERT INTO Equipo (Nombre, Anio_fundacion, Pais, Entrenador, Propetario) VALUES (?, ?, ?, ?, ?)";
-			PreparedStatement preparedStatement;
+			PreparedStatement preparedStatement = conexion.prepareStatement(consultaRegistrarEquipo);
 			
-			preparedStatement = conexion.prepareStatement(consultaRegistrarEquipo);
 			preparedStatement.setString(1, nombre);
 			preparedStatement.setInt(2, anio_fundacion);
 			preparedStatement.setString(3, pais);
@@ -116,6 +119,40 @@ public class DatabaseManager {
 	    } catch(SQLException exception) {
 			JOptionPane.showMessageDialog(null, exception.toString());
 			return false;
+		}
+	    
+	}
+    
+    //Devuelve un arreglo con todos los equipo listos para ser listados
+    public static ArrayList<Equipo> registrarEquipo() {
+    	
+    	ArrayList<Equipo> listaEquipos = new ArrayList<>();
+    	
+		try {
+			String consulta = "SELECT ID_Equipo, Nombre, Anio_fundacion, Pais, Entrenador, Propetario FROM Equipo";
+			PreparedStatement preparedStatement = conexion.prepareStatement(consulta);
+			
+			ResultSet resultado = preparedStatement.executeQuery();
+			
+			
+			while (resultado.next()) {
+	            String id = resultado.getString("ID_Equipo");
+	            String nombre = resultado.getString("Nombre");
+	            int anioFundacion = resultado.getInt("Anio_fundacion");
+	            String pais = resultado.getString("Pais");
+	            String entrenador = resultado.getString("Entrenador");
+	            String propietario = resultado.getString("Propetario");
+
+	     
+	            Equipo equipo = new Equipo(id, nombre, anioFundacion, pais, entrenador, propietario, null);
+	            listaEquipos.add(equipo);
+	        }
+			
+			return listaEquipos;
+	        
+	    } catch(SQLException exception) {
+			JOptionPane.showMessageDialog(null, exception.toString());
+			return null;
 		}
 	    
 	}
