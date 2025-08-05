@@ -17,6 +17,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +31,7 @@ import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
@@ -34,6 +39,7 @@ import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import SQL.Conexion;
 import logico.Equipo;
 import logico.Juego;
 import logico.Jugador;
@@ -66,11 +72,12 @@ public class RegJugador extends JDialog {
 	private JPanel panel;
 	private JLabel lblEquipo;
 	private JButton btnSelJug;
-	private JButton selectImageButton; // Botón unificado para seleccionar/cambiar imagen
+	private JButton selectImageButton; // Botï¿½n unificado para seleccionar/cambiar imagen
 	private JSpinner spnNumero;
 	private JTextField txtIdEquipo;
 	private JButton okButton;
 	private JButton cancelButton;
+	private Connection conexion;//Conexion
 
 	/**
 	 * Launch the application.
@@ -89,6 +96,9 @@ public class RegJugador extends JDialog {
 	 * Create the dialog.
 	 */
 	public RegJugador(Jugador aux) {
+		
+		conexion = Conexion.getConexion();//Tomando la conexion
+		
 		setResizable(false);
 		setModal(true);
 		if (aux == null)
@@ -109,7 +119,7 @@ public class RegJugador extends JDialog {
 			txtId = new JTextField();
 			txtId.setBounds(84, 11, 394, 22);
 			txtId.setEditable(false);
-			txtId.setText("PL-" + SerieNacional.getInstance().getGeneradorJugador());
+			txtId.setText(obtenerProximoIdJugador());
 			txtId.setColumns(10);
 		}
 		{
@@ -236,6 +246,7 @@ public class RegJugador extends JDialog {
 			lblEquipo.setBounds(15, 393, 43, 16);
 		}
 		{
+			//Para selccionar EQUIPO del JUGADOR
 			btnSelJug = new JButton("Seleccionar");
 			btnSelJug.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
@@ -389,7 +400,7 @@ public class RegJugador extends JDialog {
 	}
 	
 	/**
-	 * Actualiza el texto del botón según si hay imagen seleccionada o no
+	 * Actualiza el texto del boton segun si hay imagen seleccionada o no
 	 */
 	private void updateButtonText() {
 		if (selectedFile != null) {
@@ -400,7 +411,7 @@ public class RegJugador extends JDialog {
 	}
 	
 	/**
-	 * Muestra un diálogo para seleccionar una imagen
+	 * Muestra un dialogo para seleccionar una imagen
 	 */
 	private void selectImage() {
 		JFileChooser fileChooser = new JFileChooser();
@@ -436,7 +447,7 @@ public class RegJugador extends JDialog {
 			imageDisplayLabel.setText("");
 			
 			photoLabel.setIcon(null);
-			photoLabel.setText("Arrastra una imagen aquí");
+			photoLabel.setText("Arrastra una imagen aquï¿½");
 		} catch (Exception e) {
 			e.printStackTrace();
 			imageDisplayLabel.setIcon(null);
@@ -515,7 +526,7 @@ public class RegJugador extends JDialog {
 
 	private void clean() {
 	    SerieNacional.getInstance();
-		txtId.setText("PL-"+SerieNacional.getInstance().getGeneradorJugador());
+		txtId.setText(obtenerProximoIdJugador());
 	    txtNombre.setText("");
 	    txtApellido.setText("");
 	    spnPeso.setValue(0f);
@@ -545,5 +556,24 @@ public class RegJugador extends JDialog {
 	        && ((int) spnPeso.getValue()) > 0
 	        && ((int) spnAltura.getValue()) > 0
 	        && !txtIdEquipo.getText().trim().isEmpty();
+	}
+	
+	public String obtenerProximoIdJugador() {
+	    String proximoId = "PL-1"; // Valor por defecto
+	    String consulta = "SELECT 'PL-' + CAST(ISNULL(IDENT_CURRENT('Jugador'), 0) + 1 AS VARCHAR) AS ProximoID";
+
+	    try {
+	    	Statement sql = this.conexion.createStatement();
+	        ResultSet resultado = sql.executeQuery(consulta);
+	        
+	        if (resultado.next()) {
+	            proximoId = resultado.getString("ProximoID");
+	        }
+	        
+	    } catch(SQLException ex) {
+			JOptionPane.showMessageDialog(null, ex.toString());
+		}
+	    
+	    return proximoId;
 	}
 }

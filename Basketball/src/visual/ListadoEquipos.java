@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.sql.Connection;
 import java.util.ArrayList;
 
 import javax.swing.border.EmptyBorder;
@@ -32,6 +33,7 @@ public class ListadoEquipos extends JDialog {
     private JPanel searchPanel;
     private JScrollPane scrollPane;
     private JButton consultarBtn;
+    private Connection conexion;
 
     public ListadoEquipos() {
     	setModal(true);
@@ -96,7 +98,7 @@ public class ListadoEquipos extends JDialog {
             }
         });
         
-        searchPanel.add(new JLabel("Barra de búsqueda:   "), BorderLayout.WEST);
+        searchPanel.add(new JLabel("Barra de bï¿½squeda:   "), BorderLayout.WEST);
         searchPanel.add(searchField, BorderLayout.CENTER);
         
         String[] columnNames = {"ID", "Equipo", "Entrenador", "Ciudad", "Cant. Juegos"};
