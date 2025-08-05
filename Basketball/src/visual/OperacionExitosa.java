@@ -49,7 +49,7 @@ public class OperacionExitosa extends JDialog {
         contentPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
         getContentPane().add(contentPanel, BorderLayout.CENTER);
 
-         JLabel lblMensaje = new JLabel("Operación Exitosa", JLabel.CENTER);
+         JLabel lblMensaje = new JLabel("Operacion Exitosa", JLabel.CENTER);
         lblMensaje.setBackground(new Color(240, 240, 240));
         lblMensaje.setFont(new Font("Arial", Font.BOLD, 13));
         lblMensaje.setForeground(Color.DARK_GRAY);
