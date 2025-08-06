@@ -118,8 +118,7 @@ public class RegUser extends JDialog {
 							if (datosCompletos()) {
 								
 								// Insertar nuevo usuario registrado
-								boolean regUsuario = DatabaseManager.registrarUsuario(usuario, contrasena,
-										tipo_Usuario);
+								boolean regUsuario = DatabaseManager.registrarUsuario(usuario, contrasena, tipo_Usuario);
 
 								if (regUsuario) {
 									new OperacionEspecifica("Se ha registrado con exito").setVisible(true);
