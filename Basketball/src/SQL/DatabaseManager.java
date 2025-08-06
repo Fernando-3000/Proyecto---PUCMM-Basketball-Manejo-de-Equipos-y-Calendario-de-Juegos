@@ -14,20 +14,28 @@ import logico.Equipo;
 import logico.User;
 
 public class DatabaseManager {
-
+	
+	public static String tipoUserConectado = null;
+	
 	// Conexion a Servidor
 	static Connection conexion = Conexion.getConexion();
 
 	public static boolean validarInicioSesion(String usuario, String contrasena) {
 		try {
-			String consulta = "SELECT Nombre_usuario, Password FROM Usuario WHERE Nombre_usuario = ? AND Password = ?";
+			String consulta = "SELECT Nombre_usuario, Password, Tipo FROM Usuario WHERE Nombre_usuario = ? AND Password = ?";
 			// Connection conexion = Conexion.getConexion();
 			PreparedStatement prepareState = conexion.prepareStatement(consulta);
 			prepareState.setString(1, usuario);
 			prepareState.setString(2, contrasena);
 
 			ResultSet resultado = prepareState.executeQuery();
-			return resultado.next();
+			
+			if (resultado.next()) {
+	            tipoUserConectado = resultado.getString("Tipo");
+	            return true;
+	        } else {
+	            return false;
+	        }
 
 		} catch (SQLException exception) {
 			exception.printStackTrace();
@@ -156,24 +164,23 @@ public class DatabaseManager {
 		}
 	}
 
-	
-	// Devuelve un arreglo con todos los usuarios listos para ser listados
-	public static ArrayList<User> listarUsuario() {
+	// Devuelve un arreglo con todos los usuarios registrados (solo su tipo y
+	// usuario)
+	public static ArrayList<User> listarUsuarios() {
 
 		ArrayList<User> listaUsuarios = new ArrayList<>();
 
 		try {
-			String consulta = "SELECT Nombre_usuario, Password, Tipo FROM Usuario";
+			String consulta = "SELECT Nombre_usuario, Tipo FROM Usuario";
 			PreparedStatement preparedStatement = conexion.prepareStatement(consulta);
 
 			ResultSet resultado = preparedStatement.executeQuery();
 
 			while (resultado.next()) {
-				String id = resultado.getString("Nombre_usuario");
-				String nombre_usuario = resultado.getString("Password");
+				String nombre_usuario = resultado.getString("Nombre_usuario");
 				String tipo_usuario = resultado.getString("Tipo");
 
-				User User = new User(id, nombre_usuario, tipo_usuario);
+				User User = new User(tipo_usuario, nombre_usuario);
 				listaUsuarios.add(User);
 			}
 
@@ -185,34 +192,48 @@ public class DatabaseManager {
 		}
 
 	}
-	
-	// Devuelve un arreglo con todos los usuarios listos para ser listados
-		public static ArrayList<User> listarJugadores() {
 
-			ArrayList<User> listaUsuarios = new ArrayList<>();
+	// Elimina un usuario de la base de datos
+	public static boolean eliminarUsuario(String nombre_Usuario) {
 
-			try {
-				String consulta = "SELECT Nombre_usuario, Password, Tipo FROM Usuario";
-				PreparedStatement preparedStatement = conexion.prepareStatement(consulta);
+		try {
+			String consulta = "DELETE FROM Usuario WHERE Nombre_usuario = ?";
+			PreparedStatement preparedStatement = conexion.prepareStatement(consulta);
+			preparedStatement.setString(1, nombre_Usuario);
+			int filasAfectadas = preparedStatement.executeUpdate();
 
-				ResultSet resultado = preparedStatement.executeQuery();
-
-				while (resultado.next()) {
-					String nombre_usuario = resultado.getString("Password");
-					String tipo_usuario = resultado.getString("Tipo");
-
-					User User = new User(tipo_usuario, nombre_usuario);
-					listaUsuarios.add(User);
-				}
-
-				return listaUsuarios;
-
-			} catch (SQLException exception) {
-				JOptionPane.showMessageDialog(null, exception.toString());
-				return null;
+			if (filasAfectadas > 0) {
+				return true;
+			} else {
+				return false;
 			}
 
+		} catch (SQLException exception) {
+			JOptionPane.showMessageDialog(null, exception.toString());
+			return false;
 		}
+	}
+
+	// Busca y devuelve objeto usuario de la base de datos
+	public static User buscarUsuario(String nombre_Usuario) {
+		try {
+			String consulta = "SELECT Nombre_usuario, Tipo FROM Usuario WHERE Nombre_usuario = ?";
+			PreparedStatement preparedStatement = conexion.prepareStatement(consulta);
+			preparedStatement.setString(1, nombre_Usuario);
+			ResultSet resultado = preparedStatement.executeQuery();
+			
+			if (resultado.next()) {
+	            String nombre_usuario = resultado.getString("Nombre_usuario");
+	            String tipo_usuario = resultado.getString("Tipo");
+	            return new User(tipo_usuario, nombre_usuario);
+	        } else {
+	            return null;
+	        }
+		} catch (SQLException exception) {
+			JOptionPane.showMessageDialog(null, exception.toString());
+			return null;
+		}
+	}
 
 	/*
 	 * //Obtiene un equipo por su ID desde la base de datos public static Equipo
