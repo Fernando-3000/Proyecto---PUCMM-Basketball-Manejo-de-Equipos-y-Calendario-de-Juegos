@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Jugador implements Serializable{
+public class Jugador implements Serializable {
 	private String id;
 	private String nombre;
 	private String apellido;
@@ -14,13 +14,13 @@ public class Jugador implements Serializable{
 	private int numero;
 	private File foto;
 	private Equipo equipo;
-	private ArrayList<Lesion>misLesiones;
-	private ArrayList<Juego>juegos;
+	private ArrayList<Lesion> misLesiones;
+	private ArrayList<Juego> juegos;
 	private EstJugador estadisticas;
 	private static final long serialVersionUID = 1L;
 
-	public Jugador(String id, String nombre, String apellido, String posicion, float pesoKg, float alturaCm, int numero, File foto, Equipo equipo,
-				   ArrayList<Lesion> misLesiones, ArrayList<Juego> juegos) {
+	public Jugador(String id, String nombre, String apellido, String posicion, float pesoKg, float alturaCm, int numero,
+			File foto, Equipo equipo, ArrayList<Lesion> misLesiones, ArrayList<Juego> juegos) {
 		super();
 		this.id = id;
 		this.nombre = nombre;
@@ -34,6 +34,20 @@ public class Jugador implements Serializable{
 		this.misLesiones = misLesiones;
 		this.juegos = juegos;
 		this.estadisticas = new EstJugador(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	}
+
+	public Jugador(String id, String nombre, String apellido, String posicion, float pesoKg, float alturaCm, int numero,
+			File foto, Equipo equipo) {
+		super();
+		this.id = id;
+		this.nombre = nombre;
+		this.apellido = apellido;
+		this.posicion = posicion;
+		this.pesoKg = pesoKg;
+		this.alturaCm = alturaCm;
+		this.numero = numero;
+		this.foto = foto;
+		this.equipo = equipo;
 	}
 
 	public String getId() {
@@ -120,17 +134,15 @@ public class Jugador implements Serializable{
 		this.estadisticas = estadisticas;
 	}
 
-
 	public boolean getEstadoSalud() {
-		for (Lesion lesI : misLesiones)
-		{
-			if (lesI.isEstado())				
+		for (Lesion lesI : misLesiones) {
+			if (lesI.isEstado())
 				return false;
 		}
 
 		return true;
 	}
-	
+
 	public int getNumero() {
 		return numero;
 	}
@@ -140,16 +152,15 @@ public class Jugador implements Serializable{
 	}
 
 	public void actualizarDatos(Jugador aux) {
-	    this.nombre = aux.getNombre();
-	    this.apellido = aux.getApellido();
-	    this.pesoKg = aux.getPesoKg();
-	    this.alturaCm = aux.getAlturaCm();
-	    this.foto = aux.getFoto();
-	    this.equipo = aux.getEquipo();
-	    this.misLesiones = aux.getMisLesiones();
-	    this.juegos = aux.getJuegos();
-	    this.numero = aux.getNumero();
-	    this.estadisticas = aux.getEstadisticas();
+		this.nombre = aux.getNombre();
+		this.apellido = aux.getApellido();
+		this.pesoKg = aux.getPesoKg();
+		this.alturaCm = aux.getAlturaCm();
+		this.foto = aux.getFoto();
+		this.equipo = aux.getEquipo();
+		this.misLesiones = aux.getMisLesiones();
+		this.juegos = aux.getJuegos();
+		this.numero = aux.getNumero();
+		this.estadisticas = aux.getEstadisticas();
 	}
 }
-

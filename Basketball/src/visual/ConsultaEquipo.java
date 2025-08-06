@@ -21,7 +21,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
-import util.Conexion; // Asegúrate de que esta clase exista y funcione
+import SQL.Conexion; // 
 
 public class ConsultaEquipo extends JDialog {
     private final JPanel contentPanel = new JPanel();
@@ -73,7 +73,7 @@ public class ConsultaEquipo extends JDialog {
         txtNombre.setColumns(10);
         contentPanel.add(txtNombre);
 
-        JLabel lblAnoFund = new JLabel("Año de fundación:");
+        JLabel lblAnoFund = new JLabel("Aï¿½o de fundaciï¿½n:");
         lblAnoFund.setBounds(277, 42, 105, 16);
         contentPanel.add(lblAnoFund);
 
@@ -83,7 +83,7 @@ public class ConsultaEquipo extends JDialog {
         spnAnoFund.setColumns(10);
         contentPanel.add(spnAnoFund);
 
-        JLabel ldlPais = new JLabel("País:");
+        JLabel ldlPais = new JLabel("Paï¿½s:");
         ldlPais.setBounds(54, 72, 28, 16);
         contentPanel.add(ldlPais);
 
@@ -103,7 +103,7 @@ public class ConsultaEquipo extends JDialog {
         txtEntrenador.setColumns(10);
         contentPanel.add(txtEntrenador);
 
-        JLabel lblDueno = new JLabel("Dueño:");
+        JLabel lblDueno = new JLabel("Dueï¿½o:");
         lblDueno.setBounds(259, 95, 50, 16);
         contentPanel.add(lblDueno);
 
@@ -142,14 +142,14 @@ public class ConsultaEquipo extends JDialog {
         });
         contentPanel.add(btnVerListadoDe);
 
-        btnVerEstadisticas = new JButton("Ver Estadísticas");
+        btnVerEstadisticas = new JButton("Ver Estadï¿½sticas");
         btnVerEstadisticas.setBounds(259, 294, 216, 70);
         btnVerEstadisticas.addActionListener(e -> {
             new ConsultaEstEquipo(idEquipo).setVisible(true);
         });
         contentPanel.add(btnVerEstadisticas);
 
-        // --- Botón Volver ---
+        // --- Botï¿½n Volver ---
         JPanel buttonPane = new JPanel();
         buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
         getContentPane().add(buttonPane, BorderLayout.SOUTH);
@@ -163,7 +163,7 @@ public class ConsultaEquipo extends JDialog {
         if (idEquipo != null && !idEquipo.trim().isEmpty()) {
             cargarDesdeBD(idEquipo);
         } else {
-            javax.swing.JOptionPane.showMessageDialog(this, "ID de equipo no válido.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+            javax.swing.JOptionPane.showMessageDialog(this, "ID de equipo no vï¿½lido.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
             dispose();
         }
     }

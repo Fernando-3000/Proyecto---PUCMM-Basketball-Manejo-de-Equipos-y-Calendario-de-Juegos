@@ -16,6 +16,12 @@ public class User implements Serializable{
 		this.userName = userName;
 		this.pass = pass;
 	}
+	
+	public User(String tipo, String userName) {
+		super();
+		this.tipo = tipo;
+		this.userName = userName;
+	}
 
 	public String getTipo() {
 		return tipo;

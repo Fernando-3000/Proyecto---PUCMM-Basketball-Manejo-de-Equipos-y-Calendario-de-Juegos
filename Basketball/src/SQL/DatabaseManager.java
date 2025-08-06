@@ -11,199 +11,243 @@ import java.util.ArrayList;
 import javax.swing.JOptionPane;
 
 import logico.Equipo;
+import logico.User;
 
 public class DatabaseManager {
-	
-	//Conexion a Servidor
+
+	// Conexion a Servidor
 	static Connection conexion = Conexion.getConexion();
-    
-    public static boolean validarInicioSesion(String usuario, String contrasena) {
-    	try {
-	    	String consulta = "SELECT Nombre_usuario, Password FROM Usuario WHERE Nombre_usuario = ? AND Password = ?";
-	    	//Connection conexion = Conexion.getConexion();
+
+	public static boolean validarInicioSesion(String usuario, String contrasena) {
+		try {
+			String consulta = "SELECT Nombre_usuario, Password FROM Usuario WHERE Nombre_usuario = ? AND Password = ?";
+			// Connection conexion = Conexion.getConexion();
 			PreparedStatement prepareState = conexion.prepareStatement(consulta);
 			prepareState.setString(1, usuario);
 			prepareState.setString(2, contrasena);
-			
+
 			ResultSet resultado = prepareState.executeQuery();
 			return resultado.next();
-		
-    	} catch(SQLException exception) {
-        	exception.printStackTrace();
-        	return false;
-		}	
-    }
-    
-    //Verifica si el nombre del usuario esta YA esta registrado
-    public static boolean validarNombreUsuario(String usuario) {
-    	try {
-    		//Validando que el id del no este registrado
+
+		} catch (SQLException exception) {
+			exception.printStackTrace();
+			return false;
+		}
+	}
+
+	// Verifica si el nombre del usuario esta YA esta registrado
+	public static boolean validarNombreUsuario(String usuario) {
+		try {
+			// Validando que el id del no este registrado
 			String consultaValidarUser = "SELECT Nombre_usuario FROM Usuario WHERE Nombre_usuario = ?";
 			PreparedStatement prepareState = conexion.prepareStatement(consultaValidarUser);
 			prepareState.setString(1, usuario);
-			
+
 			ResultSet resultado = prepareState.executeQuery();
-    		boolean usuarioEncontrado = resultado.next(); // Si encontro el Usuario
+			boolean usuarioEncontrado = resultado.next(); // Si encontro el Usuario
 			return usuarioEncontrado;
-		
-    	} catch(SQLException exception) {
-        	exception.printStackTrace();
-        	return false;
-		}	
-    }
-    
-  //Verifica si el nombre del usuario esta YA esta registrado
-    public static boolean registrarUsuario(String usuario, String contrasena, String tipo_usuario) {
-    	try {
-    		//Insertar nuevo usuario registrado
-		    String consultaRegistrarUsuario = "INSERT INTO Usuario (Nombre_usuario, Password, Tipo) VALUES (?, ?, ?)";
-		    PreparedStatement prepareState = conexion.prepareStatement(consultaRegistrarUsuario);
-		    prepareState.setString(1, usuario);
-		    prepareState.setString(2, contrasena);
-		    prepareState.setString(3, tipo_usuario);
-												
+
+		} catch (SQLException exception) {
+			exception.printStackTrace();
+			return false;
+		}
+	}
+
+	// Verifica si el nombre del usuario esta YA esta registrado
+	public static boolean registrarUsuario(String usuario, String contrasena, String tipo_usuario) {
+		try {
+			// Insertar nuevo usuario registrado
+			String consultaRegistrarUsuario = "INSERT INTO Usuario (Nombre_usuario, Password, Tipo) VALUES (?, ?, ?)";
+			PreparedStatement prepareState = conexion.prepareStatement(consultaRegistrarUsuario);
+			prepareState.setString(1, usuario);
+			prepareState.setString(2, contrasena);
+			prepareState.setString(3, tipo_usuario);
+
 			int filasAfectadas = prepareState.executeUpdate();
-			
-			if(filasAfectadas > 0) {
+
+			if (filasAfectadas > 0) {
 				return true;
 			} else {
 				return false;
 			}
-		
-    	} catch(SQLException exception) {
-        	exception.printStackTrace();
-        	return false;
-		}	
-    }
-    
-    //Obtener Proximo ID EQUIPO
-    public static String obtenerProximoIdEquipo() {
-	    String proximoId = "EQ-1"; // Valor por defecto
-	    String consulta = "SELECT 'EQ-' + CAST(ISNULL(IDENT_CURRENT('Equipo'), 0) + 1 AS VARCHAR) AS ProximoID";
 
-	    try {
-	    	Statement statement = conexion.createStatement();
-	        ResultSet resultado = statement.executeQuery(consulta);
-	        
-	        if (resultado.next()) {
-	            proximoId = resultado.getString("ProximoID");
-	        }
-	        
-	    } catch(SQLException exception) {
+		} catch (SQLException exception) {
+			exception.printStackTrace();
+			return false;
+		}
+	}
+
+	// Obtener Proximo ID EQUIPO
+	public static String obtenerProximoIdEquipo() {
+		String proximoId = "EQ-1"; // Valor por defecto
+		String consulta = "SELECT 'EQ-' + CAST(ISNULL(IDENT_CURRENT('Equipo'), 0) + 1 AS VARCHAR) AS ProximoID";
+
+		try {
+			Statement statement = conexion.createStatement();
+			ResultSet resultado = statement.executeQuery(consulta);
+
+			if (resultado.next()) {
+				proximoId = resultado.getString("ProximoID");
+			}
+
+		} catch (SQLException exception) {
 			JOptionPane.showMessageDialog(null, exception.toString());
 		}
-	    
-	    return proximoId;
+
+		return proximoId;
 	}
-    
-  //Obtener Proximo ID EQUIPO
-    public static boolean registrarEquipo(String nombre, int anio_fundacion, String pais, String entrenador, String propetario) {
+
+	// Obtener Proximo ID EQUIPO
+	public static boolean registrarEquipo(String nombre, int anio_fundacion, String pais, String entrenador,
+			String propetario) {
 		try {
 			String consultaRegistrarEquipo = "INSERT INTO Equipo (Nombre, Anio_fundacion, Pais, Entrenador, Propetario) VALUES (?, ?, ?, ?, ?)";
 			PreparedStatement preparedStatement = conexion.prepareStatement(consultaRegistrarEquipo);
-			
+
 			preparedStatement.setString(1, nombre);
 			preparedStatement.setInt(2, anio_fundacion);
 			preparedStatement.setString(3, pais);
 			preparedStatement.setString(4, entrenador);
 			preparedStatement.setString(5, propetario);
-			
+
 			int filasAfectadas = preparedStatement.executeUpdate();
-			
-			if(filasAfectadas > 0) {
+
+			if (filasAfectadas > 0) {
 				return true;
 			} else {
 				return false;
 			}
-	        
-	    } catch(SQLException exception) {
+
+		} catch (SQLException exception) {
 			JOptionPane.showMessageDialog(null, exception.toString());
 			return false;
 		}
-	    
+
 	}
-    
-    //Devuelve un arreglo con todos los equipo listos para ser listados
-    public static ArrayList<Equipo> registrarEquipo() {
-    	
-    	ArrayList<Equipo> listaEquipos = new ArrayList<>();
-    	
+
+	// Devuelve un arreglo con todos los equipo listos para ser listados
+	public static ArrayList<Equipo> listarEquipo() {
+
+		ArrayList<Equipo> listaEquipos = new ArrayList<>();
+
 		try {
 			String consulta = "SELECT ID_Equipo, Nombre, Anio_fundacion, Pais, Entrenador, Propetario FROM Equipo";
 			PreparedStatement preparedStatement = conexion.prepareStatement(consulta);
-			
-			ResultSet resultado = preparedStatement.executeQuery();
-			
-			
-			while (resultado.next()) {
-	            String id = resultado.getString("ID_Equipo");
-	            String nombre = resultado.getString("Nombre");
-	            int anioFundacion = resultado.getInt("Anio_fundacion");
-	            String pais = resultado.getString("Pais");
-	            String entrenador = resultado.getString("Entrenador");
-	            String propietario = resultado.getString("Propetario");
 
-	     
-	            Equipo equipo = new Equipo(id, nombre, anioFundacion, pais, entrenador, propietario, null);
-	            listaEquipos.add(equipo);
-	        }
-			
+			ResultSet resultado = preparedStatement.executeQuery();
+
+			while (resultado.next()) {
+				String id = resultado.getString("ID_Equipo");
+				String nombre = resultado.getString("Nombre");
+				int anioFundacion = resultado.getInt("Anio_fundacion");
+				String pais = resultado.getString("Pais");
+				String entrenador = resultado.getString("Entrenador");
+				String propietario = resultado.getString("Propetario");
+
+				Equipo equipo = new Equipo(id, nombre, anioFundacion, pais, entrenador, propietario, null);
+				listaEquipos.add(equipo);
+			}
+
 			return listaEquipos;
-	        
-	    } catch(SQLException exception) {
+
+		} catch (SQLException exception) {
 			JOptionPane.showMessageDialog(null, exception.toString());
 			return null;
 		}
-	    
 	}
-    
-    
-    //Obtiene un equipo por su ID desde la base de datos
-    public static Equipo obtenerEquipoPorId(String id) {
-        String sql = "SELECT id, Nombre, Anio_fundacion, Pais, Entrenador, Propetario, foto_path FROM Equipo WHERE id = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setString(1, id);
-            ResultSet rs = ps.executeQuery();
-            
-            if (rs.next()) {
-                Equipo equipo = new Equipo();
-                equipo.setId(rs.getString("id"));
-                equipo.setNombre(rs.getString("Nombre"));
-                equipo.setAnoFundacion(rs.getInt("Anio_fundacion"));
-                equipo.setPais(rs.getString("Pais"));
-                equipo.setEntrenador(rs.getString("Entrenador"));
-                equipo.setDueno(rs.getString("Propetario")); // Nota: en tu BD es "Propetario"
-                equipo.setFotoPath(rs.getString("foto_path"));
-                return equipo;
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error al consultar equipo: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
-        return null;
-    }
-    
-    // Obtiene un jugador por su ID desde la base de datos
-    public static Equipo obtenerEquipoPorId(String id) {
-        String sql = "SELECT id, Nombre, Anio_fundacion, Pais, Entrenador, Propetario, foto_path FROM Equipo WHERE id = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setString(1, id);
-            ResultSet rs = ps.executeQuery();
-            
-            if (rs.next()) {
-                Equipo equipo = new Equipo();
-                equipo.setId(rs.getString("id"));
-                equipo.setNombre(rs.getString("Nombre"));
-                equipo.setAnoFundacion(rs.getInt("Anio_fundacion"));
-                equipo.setPais(rs.getString("Pais"));
-                equipo.setEntrenador(rs.getString("Entrenador"));
-                equipo.setDueno(rs.getString("Propetario")); // Nota: en tu BD es "Propetario"
-                equipo.setFotoPath(rs.getString("foto_path"));
-                return equipo;
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error al consultar equipo: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
-        return null;
-    }
-    
+
+	
+	// Devuelve un arreglo con todos los usuarios listos para ser listados
+	public static ArrayList<User> listarUsuario() {
+
+		ArrayList<User> listaUsuarios = new ArrayList<>();
+
+		try {
+			String consulta = "SELECT Nombre_usuario, Password, Tipo FROM Usuario";
+			PreparedStatement preparedStatement = conexion.prepareStatement(consulta);
+
+			ResultSet resultado = preparedStatement.executeQuery();
+
+			while (resultado.next()) {
+				String id = resultado.getString("Nombre_usuario");
+				String nombre_usuario = resultado.getString("Password");
+				String tipo_usuario = resultado.getString("Tipo");
+
+				User User = new User(id, nombre_usuario, tipo_usuario);
+				listaUsuarios.add(User);
+			}
+
+			return listaUsuarios;
+
+		} catch (SQLException exception) {
+			JOptionPane.showMessageDialog(null, exception.toString());
+			return null;
+		}
+
+	}
+	
+	// Devuelve un arreglo con todos los usuarios listos para ser listados
+		public static ArrayList<User> listarJugadores() {
+
+			ArrayList<User> listaUsuarios = new ArrayList<>();
+
+			try {
+				String consulta = "SELECT Nombre_usuario, Password, Tipo FROM Usuario";
+				PreparedStatement preparedStatement = conexion.prepareStatement(consulta);
+
+				ResultSet resultado = preparedStatement.executeQuery();
+
+				while (resultado.next()) {
+					String nombre_usuario = resultado.getString("Password");
+					String tipo_usuario = resultado.getString("Tipo");
+
+					User User = new User(tipo_usuario, nombre_usuario);
+					listaUsuarios.add(User);
+				}
+
+				return listaUsuarios;
+
+			} catch (SQLException exception) {
+				JOptionPane.showMessageDialog(null, exception.toString());
+				return null;
+			}
+
+		}
+
+	/*
+	 * //Obtiene un equipo por su ID desde la base de datos public static Equipo
+	 * obtenerEquipoPorId(String id) { String sql =
+	 * "SELECT id, Nombre, Anio_fundacion, Pais, Entrenador, Propetario, foto_path FROM Equipo WHERE id = ?"
+	 * ; try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+	 * ps.setString(1, id); ResultSet rs = ps.executeQuery();
+	 * 
+	 * if (rs.next()) { Equipo equipo = new Equipo();
+	 * equipo.setId(rs.getString("id")); equipo.setNombre(rs.getString("Nombre"));
+	 * equipo.setAnoFundacion(rs.getInt("Anio_fundacion"));
+	 * equipo.setPais(rs.getString("Pais"));
+	 * equipo.setEntrenador(rs.getString("Entrenador"));
+	 * equipo.setDueno(rs.getString("Propetario")); // Nota: en tu BD es
+	 * "Propetario" equipo.setFotoPath(rs.getString("foto_path")); return equipo; }
+	 * } catch (SQLException e) { JOptionPane.showMessageDialog(null,
+	 * "Error al consultar equipo: " + e.getMessage(), "Error",
+	 * JOptionPane.ERROR_MESSAGE); } return null; }
+	 * 
+	 * // Obtiene un jugador por su ID desde la base de datos public static Equipo
+	 * obtenerEquipoPorId(String id) { String sql =
+	 * "SELECT id, Nombre, Anio_fundacion, Pais, Entrenador, Propetario, foto_path FROM Equipo WHERE id = ?"
+	 * ; try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+	 * ps.setString(1, id); ResultSet rs = ps.executeQuery();
+	 * 
+	 * if (rs.next()) { Equipo equipo = new Equipo();
+	 * equipo.setId(rs.getString("id")); equipo.setNombre(rs.getString("Nombre"));
+	 * equipo.setAnoFundacion(rs.getInt("Anio_fundacion"));
+	 * equipo.setPais(rs.getString("Pais"));
+	 * equipo.setEntrenador(rs.getString("Entrenador"));
+	 * equipo.setDueno(rs.getString("Propetario")); // Nota: en tu BD es
+	 * "Propetario" equipo.setFotoPath(rs.getString("foto_path")); return equipo; }
+	 * } catch (SQLException e) { JOptionPane.showMessageDialog(null,
+	 * "Error al consultar equipo: " + e.getMessage(), "Error",
+	 * JOptionPane.ERROR_MESSAGE); } return null; }
+	 */
+
 }

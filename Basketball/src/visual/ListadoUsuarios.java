@@ -28,6 +28,7 @@ import javax.swing.table.DefaultTableModel;
 import logico.Jugador;
 import logico.SerieNacional;
 import logico.User;
+import SQL.DatabaseManager;
 
 public class ListadoUsuarios extends JDialog {
     /**
@@ -218,7 +219,8 @@ public class ListadoUsuarios extends JDialog {
         model.setRowCount(0);
         row = new Object[model.getColumnCount()];
         
-        for(User user : SerieNacional.getInstance().getMisUsuarios()) {
+        
+        for(User user : DatabaseManager.listarUsuario()) {
             if(filtro == null) {
                 row[0] = user.getUserName();
                 row[1] = user.getTipo();

@@ -18,6 +18,8 @@ import logico.Equipo;
 import logico.SerieNacional; // Corrected to use SerieNacional instead of Torneo
 import logico.User;
 
+import SQL.DatabaseManager;
+
 public class ListadoEquipos extends JDialog {
    
     private static final long serialVersionUID = 1L;
@@ -243,7 +245,7 @@ public class ListadoEquipos extends JDialog {
         row = new Object[model.getColumnCount()];
         
         //Usando metodo para listar equipo en la base de datos
-        ArrayList<Equipo> equipos = SerieNacional.getInstance().getMisEquipos();
+        ArrayList<Equipo> equipos = DatabaseManager.registrarEquipo();
         
         for(Equipo equipo : equipos) {
             if(filtro == null) {
@@ -268,6 +270,7 @@ public class ListadoEquipos extends JDialog {
                 }
             }
         }
+        
     }
 
     public static void main(String[] args) {

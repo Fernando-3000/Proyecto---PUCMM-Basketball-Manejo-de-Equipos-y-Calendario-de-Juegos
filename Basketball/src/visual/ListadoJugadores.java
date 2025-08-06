@@ -100,10 +100,10 @@ public class ListadoJugadores extends JDialog {
             }
         });
         
-        searchPanel.add(new JLabel("Barra de búsqueda:   "), BorderLayout.WEST);
+        searchPanel.add(new JLabel("Barra de bï¿½squeda:   "), BorderLayout.WEST);
         searchPanel.add(searchField, BorderLayout.CENTER);
         
-        String[] columnNames = {"Equipo", "ID", "Jugador", "Posición", "Número", "Estado de salud"};
+        String[] columnNames = {"Equipo", "ID", "Jugador", "Posiciï¿½n", "Nï¿½mero", "Estado de salud"};
         model = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -230,7 +230,7 @@ public class ListadoJugadores extends JDialog {
 
     public static void loadAll(Equipo aux, String filtro) {
     	if (model == null) {
-    		String[] columnNames = {"Equipo", "ID", "Jugador", "Posición", "Número", "Estado de salud"};
+    		String[] columnNames = {"Equipo", "ID", "Jugador", "Posiciï¿½n", "Nï¿½mero", "Estado de salud"};
             model = new DefaultTableModel() {
                 @Override
                 public boolean isCellEditable(int row, int column) {
@@ -243,10 +243,11 @@ public class ListadoJugadores extends JDialog {
     	model.setRowCount(0);
         row = new Object[model.getColumnCount()];
         ArrayList<Jugador> jugadores;
-        if (aux == null)
+        /*if (aux == null)
         	jugadores = SerieNacional.getInstance().getMisJugadores();
         else
         	jugadores = aux.getJugadores();
+        */
         
         for(Jugador jugador : jugadores) {
             if(filtro == null) {
