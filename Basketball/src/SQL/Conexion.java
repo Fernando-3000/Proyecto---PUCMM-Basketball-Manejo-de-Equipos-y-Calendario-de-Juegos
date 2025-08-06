@@ -8,7 +8,7 @@ public class Conexion {
 	
 	public static Connection getConexion() {
 		
-		String conexionURL = "jdbc:sqlserver://100.90.107.110:1433;"
+		String conexionURL = "jdbc:sqlserver://100.94.159.39:1433;"
 				+ "database=BasketballSystem;"
 				+ "user=pruebaPOO;"
 				+ "password=12345;"
