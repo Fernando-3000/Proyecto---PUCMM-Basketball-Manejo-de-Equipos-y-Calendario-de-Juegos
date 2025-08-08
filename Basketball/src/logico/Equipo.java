@@ -1,5 +1,6 @@
 package logico;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -11,13 +12,14 @@ public class Equipo implements Serializable {
 	private String pais;
 	private int anoFundacion;
 	private String dueno;
-	private File foto;
+	private BufferedImage imagenLogo;
+	private File imagenLogoFile;
 	private ArrayList<Juego> juegos;
 	private ArrayList<Jugador> jugadores;
 	private EstEquipo estadistica;
 	private static final long serialVersionUID = 1L;
 
-	public Equipo(String id, String nombre, String entrenador, String pais, int anoFundacion, String dueno, File foto,
+	public Equipo(String id, String nombre, String entrenador, String pais, int anoFundacion, String dueno, BufferedImage imagenLogo,
 			ArrayList<Juego> juegos, ArrayList<Jugador> jugadores) {
 		this.id = id;
 		this.nombre = nombre;
@@ -25,20 +27,31 @@ public class Equipo implements Serializable {
 		this.pais = pais;
 		this.anoFundacion = anoFundacion;
 		this.dueno = dueno;
-		this.foto = foto;
+		this.setImagenLogo(imagenLogo);
 		this.jugadores = jugadores;
 		this.juegos = juegos;
 		this.estadistica = new EstEquipo(0, 0, 0, 0, 0, 0, 0, 0);
 	}
 
-	public Equipo(String id, String nombre, int anoFundacion, String pais, String entrenador, String dueno, File foto) {
+	public Equipo(String id, String nombre, int anoFundacion, String pais, String entrenador, String dueno, BufferedImage imagenLogo) {
 		this.id = id;
 		this.nombre = nombre;
 		this.entrenador = entrenador;
 		this.pais = pais;
 		this.anoFundacion = anoFundacion;
 		this.dueno = dueno;
-		this.foto = foto;
+		this.setImagenLogo(imagenLogo);
+		//this.setTipoImagen(tipoImagen);
+	}
+	
+	public Equipo(String id, String nombre, int anoFundacion, String pais, String entrenador, String dueno, File imagenLogo) {
+		this.id = id;
+		this.nombre = nombre;
+		this.entrenador = entrenador;
+		this.pais = pais;
+		this.anoFundacion = anoFundacion;
+		this.dueno = dueno;
+		this.setImagenLogoFile(imagenLogo);
 	}
 
 	public String getNombre() {
@@ -81,14 +94,6 @@ public class Equipo implements Serializable {
 		this.dueno = dueno;
 	}
 
-	public File getFoto() {
-		return foto;
-	}
-
-	public void setFoto(File foto) {
-		this.foto = foto;
-	}
-
 	public ArrayList<Juego> getJuegos() {
 		return juegos;
 	}
@@ -116,16 +121,36 @@ public class Equipo implements Serializable {
 	public String getId() {
 		return id;
 	}
+	
+	public void setId(String id) {
+		this.id = id;
+	}
 
 	public void actualizarDatos(Equipo aux) {
 		this.nombre = aux.getNombre();
 		this.entrenador = aux.getEntrenador();
 		this.pais = aux.getPais();
 		this.anoFundacion = aux.getAnoFundacion();
-		this.foto = aux.getFoto();
+		this.imagenLogo = aux.imagenLogo;
 		this.dueno = aux.getDueno();
 		this.juegos = aux.getJuegos();
 		this.jugadores = aux.getJugadores();
 		this.estadistica = aux.getEstadistica();
+	}
+
+	public BufferedImage getImagenLogo() {
+		return imagenLogo;
+	}
+
+	public void setImagenLogo(BufferedImage imagenLogo) {
+		this.imagenLogo = imagenLogo;
+	}
+
+	public File getImagenLogoFile() {
+		return imagenLogoFile;
+	}
+
+	public void setImagenLogoFile(File imagenLogoFile) {
+		this.imagenLogoFile = imagenLogoFile;
 	}
 }

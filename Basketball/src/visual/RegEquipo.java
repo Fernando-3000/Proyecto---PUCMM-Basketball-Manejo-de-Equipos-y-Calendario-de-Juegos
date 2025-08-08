@@ -77,9 +77,7 @@ public class RegEquipo extends JDialog {
 	private JButton cancelButton;
 	private Connection conexion; // Conexion
 
-	/**
-	 * Launch the application.
-	 */
+	
 	public static void main(String[] args) {
 		try {
 			RegEquipo dialog = new RegEquipo(null);
@@ -89,10 +87,8 @@ public class RegEquipo extends JDialog {
 			e.printStackTrace();
 		}
 	}
+	
 
-	/**
-	 * Create the dialog.
-	 */
 	public RegEquipo(Equipo aux) {
 
 		setResizable(false);
@@ -297,16 +293,16 @@ public class RegEquipo extends JDialog {
 
 								ArrayList<Juego> misJuegos = new ArrayList<Juego>();
 								ArrayList<Jugador> misJugadores = new ArrayList<Jugador>();
-								
-								//Registrar equipo
-								boolean regEquipo = DatabaseManager.registrarEquipo(nombre, anio_fundacion, pais, entrenador, propetario);
+
 
 								File fotoGuardada = null;
 								if (selectedFile != null) {
 									fotoGuardada = copiarImagenADirectorioApp(selectedFile, txtId.getText());
 								}
 
-								// Guardar Equipo en Base de datos
+								//Guardar Equipo en Base de datos Registrar equipo
+								boolean regEquipo = DatabaseManager.registrarEquipo(nombre, anio_fundacion, pais,
+										entrenador, propetario, fotoGuardada);
 
 								if (regEquipo) {
 									new OperacionEspecifica("Se ha registrado con exito").setVisible(true);
@@ -323,9 +319,9 @@ public class RegEquipo extends JDialog {
 							}
 						} else {
 
-							if (selectedFile != null && !selectedFile.equals(aux.getFoto())) {
+							if (selectedFile != null && !selectedFile.equals(aux.getImagenLogoFile())) {
 								File fotoGuardada = copiarImagenADirectorioApp(selectedFile, aux.getId());
-								aux.setFoto(fotoGuardada);
+								aux.setImagenLogoFile(fotoGuardada);
 							}
 
 							aux.setNombre(txtNombre.getText());
@@ -480,7 +476,7 @@ public class RegEquipo extends JDialog {
 			txtDueno.setText(aux.getDueno());
 			cmbxPais.setSelectedItem(aux.getPais());
 			spnAnoFund.setValue(aux.getAnoFundacion());
-			selectedFile = aux.getFoto();
+			selectedFile = aux.getImagenLogoFile();
 
 			if (selectedFile != null) {
 				displayImage(selectedFile);

@@ -35,7 +35,6 @@ public class ListadoEquipos extends JDialog {
     private JPanel searchPanel;
     private JScrollPane scrollPane;
     private JButton consultarBtn;
-    private Connection conexion;
 
     public ListadoEquipos() {
     	setModal(true);
@@ -103,7 +102,7 @@ public class ListadoEquipos extends JDialog {
         searchPanel.add(new JLabel("Barra de busqueda:   "), BorderLayout.WEST);
         searchPanel.add(searchField, BorderLayout.CENTER);
         
-        String[] columnNames = {"ID", "Equipo", "Entrenador", "Ciudad", "Cant. Juegos"};
+        String[] columnNames = {"ID", "Equipo", "Entrenador", "Pais", "Cant. Juegos"};
         model = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -120,7 +119,8 @@ public class ListadoEquipos extends JDialog {
                 int index = table.getSelectedRow();
                 if(index != -1) {
                     String equipoId = table.getValueAt(index, 0).toString();
-                    equipoSeleccionado = SerieNacional.getInstance().searchEquipoById(equipoId, SerieNacional.getInstance().getMisEquipos());
+                    //Buscar Equipo por ID
+                    equipoSeleccionado = DatabaseManager.obtenerEquipoPorId(equipoId);
                     modificarBtn.setEnabled(true);
                     consultarBtn.setEnabled(true);
                 }
@@ -182,7 +182,8 @@ public class ListadoEquipos extends JDialog {
         consultarBtn.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
         		if(equipoSeleccionado != null) {
-                    ConsultaEquipo consulta = new ConsultaEquipo(equipoSeleccionado);
+        			String id_Equipo = equipoSeleccionado.getId();
+                    ConsultaEquipo consulta = new ConsultaEquipo(id_Equipo);
                     consulta.setVisible(true);
                     consulta.setModal(true);
                     modificarBtn.setEnabled(false);
@@ -197,6 +198,7 @@ public class ListadoEquipos extends JDialog {
                 }
         	}
         });
+        
         consultarBtn.setFont(new Font("Dialog", Font.BOLD, 12));
         consultarBtn.setEnabled(false);
         buttonPanel.add(consultarBtn);
@@ -215,10 +217,10 @@ public class ListadoEquipos extends JDialog {
         getContentPane().add(mainPanel);
         
         loadAll(null);
-        User miUser = SerieNacional.getLoginUser();
+        String miUser = DatabaseManager.tipoUserConectado;
         if (miUser != null)
         {
-            if(!miUser.getTipo().equals("Administrador"))
+            if(!miUser.equals("Administrador"))
             {
             	modificarBtn.setVisible(false);
             	registrarBtn.setVisible(false);
@@ -245,7 +247,8 @@ public class ListadoEquipos extends JDialog {
         row = new Object[model.getColumnCount()];
         
         //Usando metodo para listar equipo en la base de datos
-        ArrayList<Equipo> equipos = DatabaseManager.registrarEquipo();
+        ArrayList<Equipo> equipos = DatabaseManager.listarEquipo();
+        //Equipo equipo = DatabaseManager.obtenerEquipoPorId("EQ-12");
         
         for(Equipo equipo : equipos) {
             if(filtro == null) {
@@ -253,7 +256,7 @@ public class ListadoEquipos extends JDialog {
                 row[1] = equipo.getNombre();
                 row[2] = equipo.getEntrenador();
                 row[3] = equipo.getPais();
-                row[4] = equipo.getJuegos().size();
+                row[4] = equipo.getPais();
                 model.addRow(row);
             } else {
                 if(equipo.getId().toLowerCase().contains(filtro.toLowerCase()) ||
@@ -297,8 +300,7 @@ public class ListadoEquipos extends JDialog {
 	                int index = table.getSelectedRow();
 	                if(index != -1) {
 	                    String equipoId = table.getValueAt(index, 0).toString();
-	                    Equipo equipoSeleccionado = SerieNacional.getInstance().searchEquipoById(equipoId, 
-	                                               SerieNacional.getInstance().getMisEquipos());
+	                    Equipo equipoSeleccionado = DatabaseManager.obtenerEquipoPorId(equipoId);
 	                    ventana.setEquipoSeleccionado(equipoSeleccionado);
 	                    dispose();
 	                }

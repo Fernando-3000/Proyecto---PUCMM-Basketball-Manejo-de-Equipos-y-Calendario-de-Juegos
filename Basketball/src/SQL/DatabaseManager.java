@@ -1,5 +1,12 @@
 package SQL;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -8,15 +15,16 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 
 import logico.Equipo;
 import logico.User;
 
 public class DatabaseManager {
-	
+
 	public static String tipoUserConectado = null;
-	
+
 	// Conexion a Servidor
 	static Connection conexion = Conexion.getConexion();
 
@@ -29,13 +37,13 @@ public class DatabaseManager {
 			prepareState.setString(2, contrasena);
 
 			ResultSet resultado = prepareState.executeQuery();
-			
+
 			if (resultado.next()) {
-	            tipoUserConectado = resultado.getString("Tipo");
-	            return true;
-	        } else {
-	            return false;
-	        }
+				tipoUserConectado = resultado.getString("Tipo");
+				return true;
+			} else {
+				return false;
+			}
 
 		} catch (SQLException exception) {
 			exception.printStackTrace();
@@ -82,85 +90,6 @@ public class DatabaseManager {
 		} catch (SQLException exception) {
 			exception.printStackTrace();
 			return false;
-		}
-	}
-
-	// Obtener Proximo ID EQUIPO
-	public static String obtenerProximoIdEquipo() {
-		String proximoId = "EQ-1"; // Valor por defecto
-		String consulta = "SELECT 'EQ-' + CAST(ISNULL(IDENT_CURRENT('Equipo'), 0) + 1 AS VARCHAR) AS ProximoID";
-
-		try {
-			Statement statement = conexion.createStatement();
-			ResultSet resultado = statement.executeQuery(consulta);
-
-			if (resultado.next()) {
-				proximoId = resultado.getString("ProximoID");
-			}
-
-		} catch (SQLException exception) {
-			JOptionPane.showMessageDialog(null, exception.toString());
-		}
-
-		return proximoId;
-	}
-
-	// Obtener Proximo ID EQUIPO
-	public static boolean registrarEquipo(String nombre, int anio_fundacion, String pais, String entrenador,
-			String propetario) {
-		try {
-			String consultaRegistrarEquipo = "INSERT INTO Equipo (Nombre, Anio_fundacion, Pais, Entrenador, Propetario) VALUES (?, ?, ?, ?, ?)";
-			PreparedStatement preparedStatement = conexion.prepareStatement(consultaRegistrarEquipo);
-
-			preparedStatement.setString(1, nombre);
-			preparedStatement.setInt(2, anio_fundacion);
-			preparedStatement.setString(3, pais);
-			preparedStatement.setString(4, entrenador);
-			preparedStatement.setString(5, propetario);
-
-			int filasAfectadas = preparedStatement.executeUpdate();
-
-			if (filasAfectadas > 0) {
-				return true;
-			} else {
-				return false;
-			}
-
-		} catch (SQLException exception) {
-			JOptionPane.showMessageDialog(null, exception.toString());
-			return false;
-		}
-
-	}
-
-	// Devuelve un arreglo con todos los equipo listos para ser listados
-	public static ArrayList<Equipo> listarEquipo() {
-
-		ArrayList<Equipo> listaEquipos = new ArrayList<>();
-
-		try {
-			String consulta = "SELECT ID_Equipo, Nombre, Anio_fundacion, Pais, Entrenador, Propetario FROM Equipo";
-			PreparedStatement preparedStatement = conexion.prepareStatement(consulta);
-
-			ResultSet resultado = preparedStatement.executeQuery();
-
-			while (resultado.next()) {
-				String id = resultado.getString("ID_Equipo");
-				String nombre = resultado.getString("Nombre");
-				int anioFundacion = resultado.getInt("Anio_fundacion");
-				String pais = resultado.getString("Pais");
-				String entrenador = resultado.getString("Entrenador");
-				String propietario = resultado.getString("Propetario");
-
-				Equipo equipo = new Equipo(id, nombre, anioFundacion, pais, entrenador, propietario, null);
-				listaEquipos.add(equipo);
-			}
-
-			return listaEquipos;
-
-		} catch (SQLException exception) {
-			JOptionPane.showMessageDialog(null, exception.toString());
-			return null;
 		}
 	}
 
@@ -214,61 +143,154 @@ public class DatabaseManager {
 		}
 	}
 
-	// Busca y devuelve objeto usuario de la base de datos
+	// Busca y devuelve objeto Usuario de la base de datos
 	public static User buscarUsuario(String nombre_Usuario) {
 		try {
 			String consulta = "SELECT Nombre_usuario, Tipo FROM Usuario WHERE Nombre_usuario = ?";
 			PreparedStatement preparedStatement = conexion.prepareStatement(consulta);
 			preparedStatement.setString(1, nombre_Usuario);
 			ResultSet resultado = preparedStatement.executeQuery();
-			
+
 			if (resultado.next()) {
-	            String nombre_usuario = resultado.getString("Nombre_usuario");
-	            String tipo_usuario = resultado.getString("Tipo");
-	            return new User(tipo_usuario, nombre_usuario);
-	        } else {
-	            return null;
-	        }
+				String nombre_usuario = resultado.getString("Nombre_usuario");
+				String tipo_usuario = resultado.getString("Tipo");
+				return new User(tipo_usuario, nombre_usuario);
+			} else {
+				return null;
+			}
 		} catch (SQLException exception) {
 			JOptionPane.showMessageDialog(null, exception.toString());
 			return null;
 		}
 	}
 
-	/*
-	 * //Obtiene un equipo por su ID desde la base de datos public static Equipo
-	 * obtenerEquipoPorId(String id) { String sql =
-	 * "SELECT id, Nombre, Anio_fundacion, Pais, Entrenador, Propetario, foto_path FROM Equipo WHERE id = ?"
-	 * ; try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-	 * ps.setString(1, id); ResultSet rs = ps.executeQuery();
-	 * 
-	 * if (rs.next()) { Equipo equipo = new Equipo();
-	 * equipo.setId(rs.getString("id")); equipo.setNombre(rs.getString("Nombre"));
-	 * equipo.setAnoFundacion(rs.getInt("Anio_fundacion"));
-	 * equipo.setPais(rs.getString("Pais"));
-	 * equipo.setEntrenador(rs.getString("Entrenador"));
-	 * equipo.setDueno(rs.getString("Propetario")); // Nota: en tu BD es
-	 * "Propetario" equipo.setFotoPath(rs.getString("foto_path")); return equipo; }
-	 * } catch (SQLException e) { JOptionPane.showMessageDialog(null,
-	 * "Error al consultar equipo: " + e.getMessage(), "Error",
-	 * JOptionPane.ERROR_MESSAGE); } return null; }
-	 * 
-	 * // Obtiene un jugador por su ID desde la base de datos public static Equipo
-	 * obtenerEquipoPorId(String id) { String sql =
-	 * "SELECT id, Nombre, Anio_fundacion, Pais, Entrenador, Propetario, foto_path FROM Equipo WHERE id = ?"
-	 * ; try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-	 * ps.setString(1, id); ResultSet rs = ps.executeQuery();
-	 * 
-	 * if (rs.next()) { Equipo equipo = new Equipo();
-	 * equipo.setId(rs.getString("id")); equipo.setNombre(rs.getString("Nombre"));
-	 * equipo.setAnoFundacion(rs.getInt("Anio_fundacion"));
-	 * equipo.setPais(rs.getString("Pais"));
-	 * equipo.setEntrenador(rs.getString("Entrenador"));
-	 * equipo.setDueno(rs.getString("Propetario")); // Nota: en tu BD es
-	 * "Propetario" equipo.setFotoPath(rs.getString("foto_path")); return equipo; }
-	 * } catch (SQLException e) { JOptionPane.showMessageDialog(null,
-	 * "Error al consultar equipo: " + e.getMessage(), "Error",
-	 * JOptionPane.ERROR_MESSAGE); } return null; }
-	 */
+	// Devuelve el ID_Equipo Para el siguiente equipo que se registrara
+	public static String obtenerProximoIdEquipo() {
+		String proximoId = "EQ-1"; // Valor por defecto
+		String consulta = "SELECT 'EQ-' + CAST(ISNULL(IDENT_CURRENT('Equipo'), 0) + 1 AS VARCHAR) AS ProximoID";
+
+		try {
+			Statement statement = conexion.createStatement();
+			ResultSet resultado = statement.executeQuery(consulta);
+
+			if (resultado.next()) {
+				proximoId = resultado.getString("ProximoID");
+			}
+
+		} catch (SQLException exception) {
+			JOptionPane.showMessageDialog(null, exception.toString());
+		}
+
+		return proximoId;
+	}
+
+	// Registra equipo en la base de datos
+	public static boolean registrarEquipo(String nombre, int anio_fundacion, String pais, String entrenador,
+			String propetario, File archivoImagen) {
+
+		String consultaRegistrarEquipo = "INSERT INTO Equipo (Nombre, Anio_fundacion, Pais, Entrenador, Propetario, Imagen_Logo) VALUES (?, ?, ?, ?, ?, ?)";
+		try (PreparedStatement preparedStatement = conexion.prepareStatement(consultaRegistrarEquipo)) {
+
+			byte[] imagenBytes = null;
+			if (archivoImagen != null) {
+				// Leer el archivo de imagen como BufferedImage
+				BufferedImage bufferedImage = ImageIO.read(archivoImagen);
+				if (bufferedImage == null) {
+					JOptionPane.showMessageDialog(null, "El archivo no es una imagen válida.");
+					return false;
+				}
+				// Convertir BufferedImage a byte
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				ImageIO.write(bufferedImage, "png", baos); // Usa png como formato por defecto
+				imagenBytes = baos.toByteArray();
+			}
+
+
+			preparedStatement.setString(1, nombre);
+			preparedStatement.setInt(2, anio_fundacion);
+			preparedStatement.setString(3, pais);
+			preparedStatement.setString(4, entrenador);
+			preparedStatement.setString(5, propetario);
+			preparedStatement.setBytes(6, imagenBytes);
+
+			int filasAfectadas = preparedStatement.executeUpdate();
+
+			if (filasAfectadas > 0) {
+				return true;
+			} else {
+				return false;
+			}
+
+		} catch (SQLException | IOException exception) {
+			JOptionPane.showMessageDialog(null, exception.toString());
+			return false;
+		}
+	}
+
+	// Devuelve un arreglo con todos los equipo de la base de datos
+	public static ArrayList<Equipo> listarEquipo() {
+
+		ArrayList<Equipo> listaEquipos = new ArrayList<>();
+
+		try {
+			String consulta = "SELECT ID_Equipo, Nombre, Anio_fundacion, Pais, Entrenador, Propetario, Imagen_Logo FROM Equipo";
+			PreparedStatement preparedStatement = conexion.prepareStatement(consulta);
+
+			ResultSet resultado = preparedStatement.executeQuery();
+
+			while (resultado.next()) {
+				String id = resultado.getString("ID_Equipo");
+				String nombre = resultado.getString("Nombre");
+				int anioFundacion = resultado.getInt("Anio_fundacion");
+				String pais = resultado.getString("Pais");
+				String entrenador = resultado.getString("Entrenador");
+				String propietario = resultado.getString("Propetario");
+				InputStream is = resultado.getBinaryStream("Imagen_Logo");
+				BufferedImage imagen = null;
+				if (is != null) {
+					imagen = ImageIO.read(is);
+				}
+
+				Equipo equipo = new Equipo(id, nombre, anioFundacion, pais, entrenador, propietario, imagen);
+				listaEquipos.add(equipo);
+			}
+
+			return listaEquipos;
+
+		} catch (SQLException | IOException exception) {
+			JOptionPane.showMessageDialog(null, exception.toString());
+			return null;
+		}
+	}
+
+	// Busca en la base de datos y devuelve un equipo por medio de su ID
+	public static Equipo obtenerEquipoPorId(String id) {
+		String sql = "SELECT Nombre, Anio_fundacion, Pais, Entrenador, Propetario, Imagen_Logo FROM Equipo WHERE ID_Equipo = ?";
+		try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+			ps.setString(1, id);
+			ResultSet rs = ps.executeQuery();
+
+			if (rs.next()) {
+				String nombreEquipo = rs.getString("Nombre");
+				int anio_fundacion = rs.getInt("Anio_fundacion");
+				String pais = rs.getString("Pais");
+				String entrenador = rs.getString("Entrenador");
+				String propetario = rs.getString("Propetario");
+
+				InputStream is = rs.getBinaryStream("Imagen_Logo");
+				BufferedImage imagen = null;
+				if (is != null) {
+					imagen = ImageIO.read(is);
+				}
+
+				Equipo equipo = new Equipo(id, nombreEquipo, anio_fundacion, pais, entrenador, propetario, imagen);
+				return equipo;
+			}
+		} catch (SQLException | IOException e) {
+			JOptionPane.showMessageDialog(null, "Error al consultar equipo: " + e.getMessage(), "Error",
+					JOptionPane.ERROR_MESSAGE);
+		}
+		return null;
+	}
 
 }
