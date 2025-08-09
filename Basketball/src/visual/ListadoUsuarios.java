@@ -175,7 +175,6 @@ public class ListadoUsuarios extends JDialog {
 				if (userSeleccionado != null) {
 					// Eliminar usuario en la base de datos
 					String nombre_Usuario = userSeleccionado.getUserName();
-					System.out.print(nombre_Usuario);
 					if (DatabaseManager.eliminarUsuario(nombre_Usuario)) {
 						OperacionExitosa operacion = new OperacionExitosa();
 						operacion.setVisible(true);

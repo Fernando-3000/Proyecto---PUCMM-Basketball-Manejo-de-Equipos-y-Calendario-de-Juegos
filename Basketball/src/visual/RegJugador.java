@@ -40,6 +40,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import SQL.Conexion;
+import SQL.DatabaseManager;
 import logico.Equipo;
 import logico.Juego;
 import logico.Jugador;
@@ -95,9 +96,9 @@ public class RegJugador extends JDialog {
 	/**
 	 * Create the dialog.
 	 */
-	public RegJugador(Jugador aux) {
+	public RegJugador(String idJugador) {
+		Jugador aux = DatabaseManager.obtenerJugadorPorId(idJugador);
 		
-		conexion = Conexion.getConexion();//Tomando la conexion
 		
 		setResizable(false);
 		setModal(true);
@@ -119,7 +120,7 @@ public class RegJugador extends JDialog {
 			txtId = new JTextField();
 			txtId.setBounds(84, 11, 394, 22);
 			txtId.setEditable(false);
-			txtId.setText(obtenerProximoIdJugador());
+			txtId.setText(DatabaseManager.obtenerProximoIdJugador()); //Devuelve el Id del proximo Jugador
 			txtId.setColumns(10);
 		}
 		{
@@ -317,35 +318,35 @@ public class RegJugador extends JDialog {
 						{
 							if (datosCompletos())
 							{
+								String id_EquipoJug = null; //Si no se selecciono equipo el jugador se guarda sin equipo (equipo = null)
+								if(!txtIdEquipo.getText().trim().isEmpty()) {
+									id_EquipoJug = txtIdEquipo.getText();
+								} 
+								String nombre =  txtNombre.getText();
+								String apellido = txtApellido.getText();
 								String posicion = cmbxPosicion.getSelectedItem() != null ? 
 										cmbxPosicion.getSelectedItem().toString() :  "Seleccionar";
+								float peso = Float.parseFloat(spnPeso.getValue().toString());
+								float altura = Float.parseFloat(spnAltura.getValue().toString());
+								int numeroJugador = Integer.parseInt(spnNumero.getValue().toString());
 								
 								ArrayList<Lesion> misLesiones = new ArrayList<Lesion>();
 								ArrayList<Juego> misJuegos = new ArrayList<Juego>();
-								Equipo equipo = SerieNacional.getInstance().searchEquipoById(txtIdEquipo.getText(),
-										   													 SerieNacional.getInstance().getMisEquipos());
 								
 								File fotoGuardada = null;
 					            if (selectedFile != null) {
 					                fotoGuardada = copiarImagenADirectorioApp(selectedFile, txtId.getText());
 					            }
+					            //Registrar Jugador
+								boolean regJugador = DatabaseManager.registrarJugador(id_EquipoJug, nombre, apellido, posicion, peso, altura, numeroJugador, fotoGuardada);			
+
+								if(regJugador) {
+									new OperacionEspecifica("Se ha registrado con exito").setVisible(true);
+									clean();
+								} else {
+									new OperacionEspecifica("No se pudo registrar el Jugador");
+								}
 								
-						                Jugador jug = new Jugador(txtId.getText(), 
-						                						  txtNombre.getText(), 
-						                						  txtApellido.getText(),
-						                						  posicion,
-						                						  Float.parseFloat(spnPeso.getValue().toString()), 
-						                						  Float.parseFloat(spnAltura.getValue().toString()), 
-						                						  Integer.parseInt(spnNumero.getValue().toString()), 
-						                						  fotoGuardada, 
-						                						  equipo,
-						                						  misLesiones,
-						                						  misJuegos);				
-						        SerieNacional.getInstance().guardarJugador(jug);
-						        OperacionExitosa operacion = new OperacionExitosa();
-							    operacion.setVisible(true);
-							    operacion.setModal(true);
-								clean();
 							}
 							else
 							{
@@ -356,9 +357,9 @@ public class RegJugador extends JDialog {
 						}
 						else
 						{
-							if (selectedFile != null && !selectedFile.equals(aux.getFoto())) {
+							if (selectedFile != null && !selectedFile.equals(aux.getFotoFile())) {
 				                File fotoGuardada = copiarImagenADirectorioApp(selectedFile, aux.getId());
-				                aux.setFoto(fotoGuardada);
+				                aux.setFotoFile(fotoGuardada);
 				            }
 							
 							aux.setNombre(txtNombre.getText());
@@ -505,7 +506,7 @@ public class RegJugador extends JDialog {
 	        spnPeso.setValue(aux.getPesoKg());
 	        spnAltura.setValue(aux.getAlturaCm());
 	        spnNumero.setValue(aux.getNumero());
-	        selectedFile = aux.getFoto();
+	        selectedFile = aux.getFotoFile();
 	        txtIdEquipo.setText(aux.getEquipo() != null ? aux.getEquipo().getId() : "");
 	        txtEquipoNombre.setText(aux.getEquipo() != null ? aux.getEquipo().getNombre() : "");
 	        cmbxPosicion.setSelectedItem(aux.getPosicion());
@@ -525,8 +526,7 @@ public class RegJugador extends JDialog {
 	}
 
 	private void clean() {
-	    SerieNacional.getInstance();
-		txtId.setText(obtenerProximoIdJugador());
+		txtId.setText(DatabaseManager.obtenerProximoIdJugador()); //Devuelve el Id del proximo Jugador
 	    txtNombre.setText("");
 	    txtApellido.setText("");
 	    spnPeso.setValue(0f);
@@ -554,26 +554,8 @@ public class RegJugador extends JDialog {
 	        && cmbxPosicion.getSelectedItem() != null
 	        && !cmbxPosicion.getSelectedItem().toString().equals("Seleccionar")
 	        && ((int) spnPeso.getValue()) > 0
-	        && ((int) spnAltura.getValue()) > 0
-	        && !txtIdEquipo.getText().trim().isEmpty();
+	        && ((int) spnAltura.getValue()) > 0;
+	        //&& !txtIdEquipo.getText().trim().isEmpty();  //Quitando linea para poder registrar un jugador sin necesidad de pertenecer a un equipo
 	}
 	
-	public String obtenerProximoIdJugador() {
-	    String proximoId = "PL-1"; // Valor por defecto
-	    String consulta = "SELECT 'PL-' + CAST(ISNULL(IDENT_CURRENT('Jugador'), 0) + 1 AS VARCHAR) AS ProximoID";
-
-	    try {
-	    	Statement sql = this.conexion.createStatement();
-	        ResultSet resultado = sql.executeQuery(consulta);
-	        
-	        if (resultado.next()) {
-	            proximoId = resultado.getString("ProximoID");
-	        }
-	        
-	    } catch(SQLException ex) {
-			JOptionPane.showMessageDialog(null, ex.toString());
-		}
-	    
-	    return proximoId;
-	}
 }

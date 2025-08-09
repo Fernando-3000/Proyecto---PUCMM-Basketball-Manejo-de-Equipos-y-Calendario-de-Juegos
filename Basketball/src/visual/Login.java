@@ -45,35 +45,10 @@ public class Login extends JDialog {
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				// Codigo de Archivo(Obsoleto para proyecto)
-				/*
-				 * FileInputStream serieIn; FileOutputStream serieOut; ObjectInputStream
-				 * serieRead; ObjectOutputStream serieWrite;
-				 * 
-				 * File directory = new File("rec/data"); if (!directory.exists()) {
-				 * directory.mkdirs(); }
-				 * 
-				 * try { serieIn = new FileInputStream("rec/data/serie.dat"); serieRead = new
-				 * ObjectInputStream(serieIn); SerieNacional temp =
-				 * (SerieNacional)serieRead.readObject(); SerieNacional.setSerie(temp);
-				 * serieIn.close(); serieRead.close(); } catch (FileNotFoundException e) { try {
-				 * serieOut = new FileOutputStream("rec/data/serie.dat"); serieWrite = new
-				 * ObjectOutputStream(serieOut); User aux = new User("Administrador", "Admin",
-				 * "Admin"); SerieNacional.getInstance().regUser(aux);
-				 * serieWrite.writeObject(SerieNacional.getInstance()); serieOut.close();
-				 * serieWrite.close(); } catch (FileNotFoundException e1) {
-				 * e1.printStackTrace(); } catch (IOException e1) { // TODO Auto-generated catch
-				 * block e1.printStackTrace(); } } catch (IOException e) { e.printStackTrace();
-				 * } catch (ClassNotFoundException e) { // TODO Auto-generated catch block
-				 * e.printStackTrace(); }
-				 */
-				try {
-					Login frame = new Login();
-					frame.setVisible(true);
-					frame.setModal(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+				Login frame = new Login();
+				frame.setVisible(true);
+				frame.setModal(true);
+
 			}
 		});
 	}
@@ -134,12 +109,6 @@ public class Login extends JDialog {
 					JOptionPane.showMessageDialog(dialog, "Usuario Invalido", "Error", JOptionPane.ERROR_MESSAGE);
 					dialog.dispose();
 				}
-
-				/*
-				 * if(SerieNacional.getInstance().confirmLogin(txtUser.getText(),txtContra.
-				 * getText())){ PrincipalVisual frame = new PrincipalVisual(); dispose();
-				 * frame.setVisible(true); };
-				 */
 
 			}
 		});

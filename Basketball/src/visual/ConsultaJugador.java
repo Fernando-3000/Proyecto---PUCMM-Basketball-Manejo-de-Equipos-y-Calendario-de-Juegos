@@ -3,13 +3,16 @@ package visual;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import javax.swing.*;
 
-import util.Conexion;
+import SQL.DatabaseManager;
+import logico.Equipo;
+import logico.Jugador;
 
 public class ConsultaJugador extends JDialog {
     private JTextField txtId;
@@ -21,7 +24,7 @@ public class ConsultaJugador extends JDialog {
     public ConsultaJugador(String idJugador) {
         setModal(true);
         setTitle("Consultar Jugador");
-        setBounds(100, 100, 450, 300);
+        setBounds(100, 100, 704, 429);
         setResizable(false);
         getContentPane().setLayout(new BorderLayout());
         setLocationRelativeTo(null);
@@ -95,32 +98,17 @@ public class ConsultaJugador extends JDialog {
         }
     }
 
-    /**
-     * Método que consulta el jugador en la base de datos
-     */
+    //Carga los datos del jugador en el formulario
     private void cargarJugadorDesdeBD(String idJugador) {
-        String sql = "SELECT id_jugador, nombre, posicion, numero, equipo_id FROM Jugador WHERE id_jugador = ?";
-        
-        try (Connection con = Conexion.getInstancia().getConexion();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-
-            ps.setString(1, idJugador);
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
-                txtId.setText(rs.getString("id_jugador"));
-                txtNombre.setText(rs.getString("nombre"));
-                txtPosicion.setText(rs.getString("posicion"));
-                txtNumero.setText(String.valueOf(rs.getInt("numero")));
-                txtEquipo.setText(rs.getString("equipo_id"));
-            } else {
-                JOptionPane.showMessageDialog(this, "No se encontró el jugador con ID: " + idJugador, "No encontrado", JOptionPane.INFORMATION_MESSAGE);
-                dispose();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error al conectar con la base de datos.", "Error", JOptionPane.ERROR_MESSAGE);
-            dispose();
-        }
+    	String id_EquipoJug = null; //Si no se selecciono equipo el jugador se guarda sin equipo (equipo = null)
+    	Jugador jugador = DatabaseManager.obtenerJugadorPorId(idJugador);
+		
+    	txtId.setText(jugador.getId());
+		txtNombre.setText(jugador.getNombre());
+		txtPosicion.setText(jugador.getPosicion());
+		txtNumero.setText(String.valueOf(jugador.getNumero()));
+		txtEquipo.setText(jugador.getID_Equipo());
     }
+ 
+
 }

@@ -19,6 +19,7 @@ import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 
 import logico.Equipo;
+import logico.Jugador;
 import logico.User;
 
 public class DatabaseManager {
@@ -165,6 +166,204 @@ public class DatabaseManager {
 	}
 
 	// Devuelve el ID_Equipo Para el siguiente equipo que se registrara
+	public static String obtenerProximoIdJugador() {
+		String proximoId = "PL-1"; // Valor por defecto
+		String consulta = "SELECT 'PL-' + CAST(ISNULL(IDENT_CURRENT('Jugador'), 0) + 1 AS VARCHAR) AS ProximoID";
+
+		try {
+			Statement statement = conexion.createStatement();
+			ResultSet resultado = statement.executeQuery(consulta);
+
+			if (resultado.next()) {
+				proximoId = resultado.getString("ProximoID");
+			}
+
+		} catch (SQLException exception) {
+			JOptionPane.showMessageDialog(null, exception.toString());
+		}
+
+		return proximoId;
+	}
+
+	// Registra jugador en la base de datos
+	public static boolean registrarJugador(String ID_Equipo, String nombre, String apellido, String posicion,
+			float peso, float altura, int numero, File archivoImagen) {
+
+		String consultaRegistrarEquipo = "INSERT INTO Jugador (ID_Equipo, Nombre, Apellido, Posicion, Peso, Altura, Numero, Imagen_Jugador) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+		try (PreparedStatement preparedStatement = conexion.prepareStatement(consultaRegistrarEquipo)) {
+
+			byte[] imagenBytes = null;
+			if (archivoImagen != null) {
+				// Leer el archivo de imagen como BufferedImage
+				BufferedImage bufferedImage = ImageIO.read(archivoImagen);
+				if (bufferedImage == null) {
+					JOptionPane.showMessageDialog(null, "El archivo no es una imagen válida.");
+					return false;
+				}
+				// Convertir BufferedImage a byte
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				ImageIO.write(bufferedImage, "png", baos); // Usa png como formato por defecto
+				imagenBytes = baos.toByteArray();
+			}
+
+			preparedStatement.setString(1, ID_Equipo);
+			preparedStatement.setString(2, nombre);
+			preparedStatement.setString(3, apellido);
+			preparedStatement.setString(4, posicion);
+			preparedStatement.setFloat(5, peso);
+			preparedStatement.setFloat(6, altura);
+			preparedStatement.setInt(7, numero);
+			preparedStatement.setBytes(8, imagenBytes);
+
+			int filasAfectadas = preparedStatement.executeUpdate();
+
+			if (filasAfectadas > 0) {
+				return true;
+			} else {
+				return false;
+			}
+
+		} catch (SQLException | IOException exception) {
+			JOptionPane.showMessageDialog(null, exception.toString());
+			return false;
+		}
+	}
+
+	// Eliminar un Equipo de la base de datos por id
+	public static boolean eliminarJugador(String ID_Jugador) {
+		try {
+			String consulta = "DELETE FROM Jugador WHERE ID_Jugador = ?";
+			PreparedStatement preparedStatement = conexion.prepareStatement(consulta);
+			preparedStatement.setString(1, ID_Jugador);
+
+			int filasAfectadas = preparedStatement.executeUpdate();
+			if (filasAfectadas > 0) {
+				return true;
+			} else {
+				return false;
+			}
+
+		} catch (SQLException exception) {
+			JOptionPane.showMessageDialog(null, exception.toString());
+			return false;
+		}
+	}
+
+	// Devuelve un arreglo con todos los jugadores de la base de datos
+	public static ArrayList<Jugador> listarJugadores() {
+
+		ArrayList<Jugador> listaJugadores = new ArrayList<>();
+
+		try {
+			String consulta = "SELECT ID_Jugador_Num, ID_Jugador, ID_Equipo, Nombre, Apellido, Posicion, Peso, Altura, Numero, Imagen_Jugador FROM Jugador ORDER BY ID_Jugador_Num";
+			PreparedStatement preparedStatement = conexion.prepareStatement(consulta);
+
+			ResultSet resultado = preparedStatement.executeQuery();
+
+			while (resultado.next()) {
+				String id_Jugador = resultado.getString("ID_Jugador");
+				String nombre = resultado.getString("Nombre");
+				String apellido = resultado.getString("Apellido");
+				String posicion = resultado.getString("Posicion");
+				Float peso = resultado.getFloat("Peso");
+				Float altura = resultado.getFloat("Altura");
+				int numero = resultado.getInt("Numero");
+				String id_Equipo = resultado.getString("ID_Equipo");
+				InputStream is = resultado.getBinaryStream("Imagen_Jugador");
+				BufferedImage imagen = null;
+				if (is != null) {
+					imagen = ImageIO.read(is);
+				}
+
+				Jugador jugador = new Jugador(id_Jugador, nombre, apellido, posicion, peso, altura, numero, imagen,
+						id_Equipo);
+				listaJugadores.add(jugador);
+			}
+
+			return listaJugadores;
+
+		} catch (SQLException | IOException exception) {
+			JOptionPane.showMessageDialog(null, exception.toString());
+			return null;
+		}
+	}
+	
+	// Devuelve un arreglo con todos los jugadores de la base de datos DE UN EQUIPO ESPECIFICO
+		public static ArrayList<Jugador> listarJugadoresDeEquipo(String ID_Equipo) {
+
+			ArrayList<Jugador> listaJugadores = new ArrayList<>();
+
+			try {
+				String consulta = "SELECT ID_Jugador_Num, ID_Jugador, ID_Equipo, Nombre, Apellido, Posicion, Peso, Altura, Numero, Imagen_Jugador FROM Jugador WHERE ID_Equipo = ? ORDER BY ID_Jugador_Num";
+				PreparedStatement preparedStatement = conexion.prepareStatement(consulta);
+				preparedStatement.setString(1, ID_Equipo);
+
+				ResultSet resultado = preparedStatement.executeQuery();
+
+				while (resultado.next()) {
+					String id_Jugador = resultado.getString("ID_Jugador");
+					String nombre = resultado.getString("Nombre");
+					String apellido = resultado.getString("Apellido");
+					String posicion = resultado.getString("Posicion");
+					Float peso = resultado.getFloat("Peso");
+					Float altura = resultado.getFloat("Altura");
+					int numero = resultado.getInt("Numero");
+					String id_Equipo = resultado.getString("ID_Equipo");
+					InputStream is = resultado.getBinaryStream("Imagen_Jugador");
+					BufferedImage imagen = null;
+					if (is != null) {
+						imagen = ImageIO.read(is);
+					}
+
+					Jugador jugador = new Jugador(id_Jugador, nombre, apellido, posicion, peso, altura, numero, imagen,
+							id_Equipo);
+					listaJugadores.add(jugador);
+				}
+
+				return listaJugadores;
+
+			} catch (SQLException | IOException exception) {
+				JOptionPane.showMessageDialog(null, exception.toString());
+				return null;
+			}
+		}
+
+	// Busca en la base de datos y devuelve un equipo por medio de su ID
+	public static Jugador obtenerJugadorPorId(String id) {
+		String consulta = "SELECT ID_Jugador, ID_Equipo, Nombre, Apellido, Posicion, Peso, Altura, Numero, Imagen_Jugador FROM Jugador WHERE ID_Jugador = ?";
+		try (PreparedStatement ps = conexion.prepareStatement(consulta)) {
+			ps.setString(1, id);
+			ResultSet resultado = ps.executeQuery();
+
+			if (resultado.next()) {
+				String id_Jugador = resultado.getString("ID_Jugador");
+				String nombre = resultado.getString("Nombre");
+				String apellido = resultado.getString("Apellido");
+				String posicion = resultado.getString("Posicion");
+				Float peso = resultado.getFloat("Peso");
+				Float altura = resultado.getFloat("Altura");
+				int numero = resultado.getInt("Numero");
+				String id_Equipo = resultado.getString("ID_Equipo");
+				InputStream is = resultado.getBinaryStream("Imagen_Jugador");
+				BufferedImage imagen = null;
+				if (is != null) {
+					imagen = ImageIO.read(is);
+				}
+
+				Jugador jugador = new Jugador(id_Jugador, nombre, apellido, posicion, peso, altura, numero, imagen,
+						id_Equipo);
+				return jugador;
+			} else {
+				return null;
+			}
+		} catch (SQLException | IOException e) {
+			JOptionPane.showMessageDialog(null, "Error al obtener jugador: " + e.getMessage(), "Error",
+					JOptionPane.ERROR_MESSAGE);
+			return null;
+		}
+	}
+
+	// Devuelve el ID_Equipo Para el siguiente equipo que se registrara
 	public static String obtenerProximoIdEquipo() {
 		String proximoId = "EQ-1"; // Valor por defecto
 		String consulta = "SELECT 'EQ-' + CAST(ISNULL(IDENT_CURRENT('Equipo'), 0) + 1 AS VARCHAR) AS ProximoID";
@@ -205,7 +404,6 @@ public class DatabaseManager {
 				imagenBytes = baos.toByteArray();
 			}
 
-
 			preparedStatement.setString(1, nombre);
 			preparedStatement.setInt(2, anio_fundacion);
 			preparedStatement.setString(3, pais);
@@ -227,13 +425,48 @@ public class DatabaseManager {
 		}
 	}
 
+	// Eliminar un Equipo de la base de datos por id
+	public static boolean eliminarEquipo(String ID_Equipo) {
+		try {
+			String consulta = "DELETE FROM Equipo WHERE ID_Equipo = ?";
+			PreparedStatement preparedStatement = conexion.prepareStatement(consulta);
+			preparedStatement.setString(1, ID_Equipo);
+			desvincularJugadoresEquipoElim(ID_Equipo); // Establece el ID_Equipo de los jugadores como null;
+			int filasAfectadas = preparedStatement.executeUpdate(); // Elimina luego el equipo
+
+			if (filasAfectadas > 0) {
+				return true;
+			} else {
+				return false;
+			}
+
+		} catch (SQLException exception) {
+			JOptionPane.showMessageDialog(null, exception.toString());
+			return false;
+		}
+	}
+
+	// Establecer como null el equipo al que pertenecen todo los jugadores de un
+	// equipo eliminado
+	public static void desvincularJugadoresEquipoElim(String ID_Equipo) {
+		try {
+			String consulta = "UPDATE Jugador SET ID_Equipo = null WHERE ID_Equipo = ?";
+			PreparedStatement preparedStatement = conexion.prepareStatement(consulta);
+			preparedStatement.setString(1, ID_Equipo);
+			int filasAfectadas = preparedStatement.executeUpdate();
+
+		} catch (SQLException exception) {
+			JOptionPane.showMessageDialog(null, exception.toString());
+		}
+	}
+
 	// Devuelve un arreglo con todos los equipo de la base de datos
 	public static ArrayList<Equipo> listarEquipo() {
 
 		ArrayList<Equipo> listaEquipos = new ArrayList<>();
 
 		try {
-			String consulta = "SELECT ID_Equipo, Nombre, Anio_fundacion, Pais, Entrenador, Propetario, Imagen_Logo FROM Equipo";
+			String consulta = "SELECT ID_Equipo_Num, ID_Equipo, Nombre, Anio_fundacion, Pais, Entrenador, Propetario, Imagen_Logo FROM Equipo ORDER BY ID_Equipo_Num";
 			PreparedStatement preparedStatement = conexion.prepareStatement(consulta);
 
 			ResultSet resultado = preparedStatement.executeQuery();
@@ -285,12 +518,14 @@ public class DatabaseManager {
 
 				Equipo equipo = new Equipo(id, nombreEquipo, anio_fundacion, pais, entrenador, propetario, imagen);
 				return equipo;
+			} else {
+				return null;
 			}
 		} catch (SQLException | IOException e) {
 			JOptionPane.showMessageDialog(null, "Error al consultar equipo: " + e.getMessage(), "Error",
 					JOptionPane.ERROR_MESSAGE);
+			return null;
 		}
-		return null;
 	}
 
 }

@@ -13,6 +13,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 
+import SQL.DatabaseManager;
 import logico.Equipo;
 import logico.Jugador;
 import logico.SerieNacional;
@@ -24,7 +25,7 @@ public class ListadoJugadores extends JDialog {
     private JTable table;
     private static DefaultTableModel model;
     private static Object[] row;
-    private Jugador jugadorSeleccionado = null;
+    //private Jugador jugadorSeleccionado = null;
     private JTextField searchField;
     private JButton volverBtn;
     private JButton modificarBtn;
@@ -34,8 +35,11 @@ public class ListadoJugadores extends JDialog {
     private JScrollPane scrollPane;
     private JButton consultarBtn;
     private JPanel buttonPanel;
+    private String jugadorSeleccionadoId;
 
-    public ListadoJugadores(Equipo aux) {
+    public ListadoJugadores(String id_Equipo) {
+    	Equipo aux = DatabaseManager.obtenerEquipoPorId(id_Equipo);
+    	
     	setModal(true);
         setResizable(false);
         setTitle("Listado de Jugadores");
@@ -87,7 +91,7 @@ public class ListadoJugadores extends JDialog {
                     searchField.setText("");
                     modificarBtn.setEnabled(false);
                     consultarBtn.setEnabled(false);
-                    jugadorSeleccionado = null;
+                    jugadorSeleccionadoId = null;
                 }
             }
             
@@ -100,10 +104,10 @@ public class ListadoJugadores extends JDialog {
             }
         });
         
-        searchPanel.add(new JLabel("Barra de b�squeda:   "), BorderLayout.WEST);
+        searchPanel.add(new JLabel("Barra de búsqueda:   "), BorderLayout.WEST);
         searchPanel.add(searchField, BorderLayout.CENTER);
         
-        String[] columnNames = {"Equipo", "ID", "Jugador", "Posici�n", "N�mero", "Estado de salud"};
+        String[] columnNames = {"Equipo", "ID", "Jugador", "Posición", "Número", "Estado de salud"};
         model = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -119,8 +123,8 @@ public class ListadoJugadores extends JDialog {
             public void mouseClicked(MouseEvent e) {
                 int index = table.getSelectedRow();
                 if(index != -1) {
-                    String jugadorId = table.getValueAt(index, 1).toString();
-                    jugadorSeleccionado = SerieNacional.getInstance().searchJugadorById(jugadorId, SerieNacional.getInstance().getMisJugadores());
+                	jugadorSeleccionadoId = table.getValueAt(index, 1).toString();
+                    //jugadorSeleccionado = SerieNacional.getInstance().searchJugadorById(jugadorId, SerieNacional.getInstance().getMisJugadores());
                     modificarBtn.setEnabled(true);
                     consultarBtn.setEnabled(true);
                 }
@@ -148,7 +152,7 @@ public class ListadoJugadores extends JDialog {
             public void actionPerformed(ActionEvent e) {
                 modificarBtn.setEnabled(false);
                 consultarBtn.setEnabled(false);
-                jugadorSeleccionado = null;
+                jugadorSeleccionadoId = null;
                 RegJugador regJugador = new RegJugador(null);
                 regJugador.setVisible(true);
                 regJugador.setModal(true);                
@@ -162,13 +166,13 @@ public class ListadoJugadores extends JDialog {
         modificarBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(jugadorSeleccionado != null) {
-                    RegJugador regJugador = new RegJugador(jugadorSeleccionado);
+                if(jugadorSeleccionadoId != null) {
+                    RegJugador regJugador = new RegJugador(jugadorSeleccionadoId);
                     regJugador.setVisible(true);
                     regJugador.setModal(true);
                     modificarBtn.setEnabled(false);
                     consultarBtn.setEnabled(false);
-                    jugadorSeleccionado = null;
+                    jugadorSeleccionadoId = null;
                     String text = searchField.getText();
                     if(text.equals("Buscar...") || text.isEmpty()) {
                         loadAll(aux, null);
@@ -182,13 +186,13 @@ public class ListadoJugadores extends JDialog {
         consultarBtn = new JButton("Consultar");
         consultarBtn.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
-        		if(jugadorSeleccionado != null) {
-	        		ConsultaJugador conJugador = new ConsultaJugador(jugadorSeleccionado);
+        		if(jugadorSeleccionadoId != null) {
+	        		ConsultaJugador conJugador = new ConsultaJugador(jugadorSeleccionadoId);
 	        		conJugador.setVisible(true);
 	        		conJugador.setModal(true);
 	        		modificarBtn.setEnabled(false);
 	                consultarBtn.setEnabled(false);
-	                jugadorSeleccionado = null;
+	                jugadorSeleccionadoId = null;
 	                String text = searchField.getText();
 	                if(text.equals("Buscar...") || text.isEmpty()) {
 	                    loadAll(aux, null);
@@ -230,7 +234,7 @@ public class ListadoJugadores extends JDialog {
 
     public static void loadAll(Equipo aux, String filtro) {
     	if (model == null) {
-    		String[] columnNames = {"Equipo", "ID", "Jugador", "Posici�n", "N�mero", "Estado de salud"};
+    		String[] columnNames = {"Equipo", "ID", "Jugador", "Posición", "Número", "Estado de salud"};
             model = new DefaultTableModel() {
                 @Override
                 public boolean isCellEditable(int row, int column) {
@@ -242,21 +246,24 @@ public class ListadoJugadores extends JDialog {
     	
     	model.setRowCount(0);
         row = new Object[model.getColumnCount()];
-        ArrayList<Jugador> jugadores;
-        /*if (aux == null)
-        	jugadores = SerieNacional.getInstance().getMisJugadores();
+        ArrayList<Jugador> jugadores; //Devuelve todos los jugadores
+        if(aux == null)
+        	jugadores = DatabaseManager.listarJugadores();//Todos lo jugadores
         else
-        	jugadores = aux.getJugadores();
-        */
+        	jugadores = DatabaseManager.listarJugadoresDeEquipo(aux.getId());//Solo muestra los jugadores del equipo que se paso por parametro en el constructor
+        
+        
         
         for(Jugador jugador : jugadores) {
             if(filtro == null) {
-                row[0] = (jugador.getEquipo() != null ? jugador.getEquipo().getNombre() : "null");
+            	//Equipo equipo = DatabaseManager.obtenerEquipoPorId(jugador.getID_Equipo());
+                //row[0] = (equipo != null ? equipo.getNombre() : "No pertenece a ningun equipo");
+            	row[0] = 'd';
                 row[1] = jugador.getId();
                 row[2] = jugador.getNombre() + " " + jugador.getApellido();
                 row[3] = jugador.getPosicion();
                 row[4] = jugador.getNumero();
-                row[5] = jugador.getEstadoSalud() ? "Activo" : "Lesionado";
+                row[5] = jugador.getNombre() + " " + jugador.getApellido();//jugador.getEstadoSalud() ? "Activo" : "Lesionado";
                 model.addRow(row);
             } else {
                 if(jugador.getId().toLowerCase().contains(filtro.toLowerCase()) ||
@@ -270,7 +277,7 @@ public class ListadoJugadores extends JDialog {
                     row[2] = jugador.getNombre() + " " + jugador.getApellido();
                     row[3] = jugador.getPosicion();
                     row[4] = jugador.getNumero();
-                    row[5] = jugador.getEstadoSalud() ? "Activo" : "Lesionado";
+                    row[5] = jugador.getNombre() + " " + jugador.getApellido();//jugador.getEstadoSalud() ? "Activo" : "Lesionado";
                     model.addRow(row);
                 }
             }

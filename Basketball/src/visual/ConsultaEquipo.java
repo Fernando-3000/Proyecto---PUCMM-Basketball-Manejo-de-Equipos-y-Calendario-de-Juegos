@@ -106,12 +106,12 @@ public class ConsultaEquipo extends JDialog {
 		txtEntrenador.setColumns(10);
 		contentPanel.add(txtEntrenador);
 
-		JLabel lblDueno = new JLabel("Propetario:");
-		lblDueno.setBounds(259, 95, 50, 16);
+		JLabel lblDueno = new JLabel("Dueño:");
+		lblDueno.setBounds(259, 95, 52, 16);
 		contentPanel.add(lblDueno);
 
 		txtDueno = new JTextField();
-		txtDueno.setBounds(305, 92, 171, 22);
+		txtDueno.setBounds(321, 92, 155, 22);
 		txtDueno.setEditable(false);
 		txtDueno.setColumns(10);
 		contentPanel.add(txtDueno);
@@ -134,7 +134,7 @@ public class ConsultaEquipo extends JDialog {
 		btnVerJugadores = new JButton("Ver Listado de Jugadores");
 		btnVerJugadores.setBounds(259, 141, 216, 70);
 		btnVerJugadores.addActionListener(e -> {
-			// new ListadoJugadores(idEquipo).setVisible(true);
+			new ListadoJugadores(idEquipo).setVisible(true);
 		});
 		contentPanel.add(btnVerJugadores);
 

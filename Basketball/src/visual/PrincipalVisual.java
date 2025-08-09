@@ -236,7 +236,8 @@ public class PrincipalVisual extends JFrame {
 		JPanel panel = new JPanel();
 		contentPane.add(panel);
 		panel.setLayout(null);
-
+		
+		/*
 		// Bara 2 win
 		gwin = new BarraWinrate();
 		gwin.setBounds(12, 458, 1228, 150);
@@ -251,6 +252,7 @@ public class PrincipalVisual extends JFrame {
 		ge = new GraficaEfectividad();
 		ge.setBounds(702, 13, 538, 429);
 		panel.add(ge);
+		*/
 
 		//Limitar Menu principal segun sea Administrador o Anotador
 		if (DatabaseManager.tipoUserConectado == null || !DatabaseManager.tipoUserConectado.equals("Administrador")) {

@@ -308,7 +308,7 @@ public class RegEquipo extends JDialog {
 									new OperacionEspecifica("Se ha registrado con exito").setVisible(true);
 									clean();
 								} else {
-									new OperacionEspecifica("No se pudo registrar el usuario");
+									new OperacionEspecifica("No se pudo registrar el equipo");
 								}
 
 								clean();// Limpia los campos de texto y se manda la conexion para que renueve el id

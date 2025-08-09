@@ -1,5 +1,6 @@
 package logico;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -12,8 +13,10 @@ public class Jugador implements Serializable {
 	private float pesoKg;
 	private float alturaCm;
 	private int numero;
-	private File foto;
+	private File fotoFile;
+	private BufferedImage fotoBuffered;
 	private Equipo equipo;
+	private String ID_Equipo;
 	private ArrayList<Lesion> misLesiones;
 	private ArrayList<Juego> juegos;
 	private EstJugador estadisticas;
@@ -29,15 +32,29 @@ public class Jugador implements Serializable {
 		this.pesoKg = pesoKg;
 		this.alturaCm = alturaCm;
 		this.numero = numero;
-		this.foto = foto;
+		this.fotoFile = foto;
 		this.equipo = equipo;
 		this.misLesiones = misLesiones;
 		this.juegos = juegos;
 		this.estadisticas = new EstJugador(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	}
 
+	public Jugador(String ID_Jugador, String nombre, String apellido, String posicion, float pesoKg, float alturaCm, int numero,
+			File foto, String ID_Equipo) {
+		super();
+		this.id = ID_Jugador;
+		this.nombre = nombre;
+		this.apellido = apellido;
+		this.posicion = posicion;
+		this.pesoKg = pesoKg;
+		this.alturaCm = alturaCm;
+		this.numero = numero;
+		this.fotoFile = foto;
+		this.setID_Equipo(ID_Equipo);
+	}
+	
 	public Jugador(String id, String nombre, String apellido, String posicion, float pesoKg, float alturaCm, int numero,
-			File foto, Equipo equipo) {
+			BufferedImage fotoBuffered, String ID_Equipo) {
 		super();
 		this.id = id;
 		this.nombre = nombre;
@@ -46,8 +63,8 @@ public class Jugador implements Serializable {
 		this.pesoKg = pesoKg;
 		this.alturaCm = alturaCm;
 		this.numero = numero;
-		this.foto = foto;
-		this.equipo = equipo;
+		this.setFotoBuffered(fotoBuffered);
+		this.setID_Equipo(ID_Equipo);
 	}
 
 	public String getId() {
@@ -94,12 +111,12 @@ public class Jugador implements Serializable {
 		this.alturaCm = alturaCm;
 	}
 
-	public File getFoto() {
-		return foto;
+	public File getFotoFile() {
+		return fotoFile;
 	}
 
-	public void setFoto(File foto) {
-		this.foto = foto;
+	public void setFotoFile(File fotoFile) {
+		this.fotoFile = fotoFile;
 	}
 
 	public Equipo getEquipo() {
@@ -156,11 +173,27 @@ public class Jugador implements Serializable {
 		this.apellido = aux.getApellido();
 		this.pesoKg = aux.getPesoKg();
 		this.alturaCm = aux.getAlturaCm();
-		this.foto = aux.getFoto();
+		this.fotoFile = aux.getFotoFile();
 		this.equipo = aux.getEquipo();
 		this.misLesiones = aux.getMisLesiones();
 		this.juegos = aux.getJuegos();
 		this.numero = aux.getNumero();
 		this.estadisticas = aux.getEstadisticas();
+	}
+
+	public BufferedImage getFotoBuffered() {
+		return fotoBuffered;
+	}
+
+	public void setFotoBuffered(BufferedImage fotoBuffered) {
+		this.fotoBuffered = fotoBuffered;
+	}
+
+	public String getID_Equipo() {
+		return ID_Equipo;
+	}
+
+	public void setID_Equipo(String iD_Equipo) {
+		ID_Equipo = iD_Equipo;
 	}
 }

@@ -87,7 +87,7 @@ public class GraficaBarra extends JPanel {
 	                }
 	            }
 	            if (imagenJugador != null) {
-	                g.drawImage(imagenJugador, i * barWidth + 50, height - barHeight - 30 - 50, 50, 50, null); //esto es para ajustar el tamaño y la posición
+	                g.drawImage(imagenJugador, i * barWidth + 50, height - barHeight - 30 - 50, 50, 50, null); //esto es para ajustar el tamaï¿½o y la posiciï¿½n
 	            	}
 	        	}
 	    	}
