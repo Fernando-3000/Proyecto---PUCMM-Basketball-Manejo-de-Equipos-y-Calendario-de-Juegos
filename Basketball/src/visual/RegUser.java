@@ -11,6 +11,7 @@ import javax.swing.border.EmptyBorder;
 
 import SQL.Conexion;
 import logico.User;
+import logico.Equipo;
 import logico.SerieNacional;
 
 import javax.swing.JLabel;
@@ -35,13 +36,14 @@ public class RegUser extends JDialog {
 	private JTextField txtPass;
 	private JTextField txtPassConfirm;
 	private JComboBox comboBox;
+	private String antiguo_Nombre_User;
 
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
 		try {
-			RegUser dialog = new RegUser();
+			RegUser dialog = new RegUser(null);
 			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 			dialog.setVisible(true);
 		} catch (Exception e) {
@@ -52,8 +54,16 @@ public class RegUser extends JDialog {
 	/**
 	 * Create the dialog.
 	 */
-	public RegUser() {
-		setTitle("Registrar usuario");
+	public RegUser(User aux) {
+		
+		if(aux == null) {
+			setTitle("Registrar Usuario");
+		} else {
+			antiguo_Nombre_User = aux.getUserName();
+			setTitle("Modificar Usuario");
+		}
+
+		
 		setResizable(false);
 		setModal(true);
 		setBounds(100, 100, 358, 196);
@@ -103,40 +113,67 @@ public class RegUser extends JDialog {
 			buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
 			{
-				JButton okButton = new JButton("Registrar");
+				JButton okButton = new JButton((aux == null) ? "Registrar" : "Modificar");
 				okButton.setFont(new Font("Tahoma", Font.BOLD, 13));
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						String usuario = txtUser.getText();
 						String contrasena = txtPass.getText();
 						String tipo_Usuario = comboBox.getSelectedItem().toString();
+						boolean usuarioEncontrado = DatabaseManager.validarNombreUsuario(usuario);// Validar nombre de usuario
 
-						// Validar nombre de usuario
-						boolean usuarioEncontrado = DatabaseManager.validarNombreUsuario(usuario);
+						if (aux == null) {
+							
+							if (!usuarioEncontrado) {
+								if (datosCompletos()) {
 
-						if (!usuarioEncontrado) {
-							if (datosCompletos()) {
-								
-								// Insertar nuevo usuario registrado
-								boolean regUsuario = DatabaseManager.registrarUsuario(usuario, contrasena, tipo_Usuario);
+									// Insertar nuevo usuario registrado
+									boolean regUsuario = DatabaseManager.registrarUsuario(usuario, contrasena,
+											tipo_Usuario);
 
-								if (regUsuario) {
-									new OperacionEspecifica("Se ha registrado con exito").setVisible(true);
-									dispose();
+									if (regUsuario) {
+										new OperacionEspecifica("Se ha registrado con exito").setVisible(true);
+										dispose();
+									} else {
+										new OperacionEspecifica("No se pudo registrar el usuario");
+									}
 								} else {
-									new OperacionEspecifica("No se pudo registrar el usuario");
+									OperacionEspecifica operacion = new OperacionEspecifica(
+											"Rellene todos los campos.");
+									operacion.setVisible(true);
+									operacion.setModal(true);
 								}
 							} else {
-								OperacionEspecifica operacion = new OperacionEspecifica("Rellene todos los campos.");
+								OperacionEspecifica operacion = new OperacionEspecifica("Nombre de usuario en uso");
 								operacion.setVisible(true);
 								operacion.setModal(true);
 							}
-						} else {
-							OperacionEspecifica operacion = new OperacionEspecifica("Nombre de usuario en uso");
-							operacion.setVisible(true);
-							operacion.setModal(true);
-						}
+							
+						} else {//Para las modificaciones de Usuario
+							if (!usuarioEncontrado) {
+								if (datosCompletos()) {
 
+									// Insertar nuevo usuario registrado
+									boolean actualizarUsuario = DatabaseManager.actualizarUsuario(antiguo_Nombre_User, usuario, contrasena, tipo_Usuario);
+
+									if (actualizarUsuario) {
+										new OperacionEspecifica("Se ha actualizado con exito").setVisible(true);
+										dispose();
+									} else {
+										new OperacionEspecifica("No se pudo actualizar el usuario");
+									}
+								} else {
+									OperacionEspecifica operacion = new OperacionEspecifica(
+											"Rellene todos los campos.");
+									operacion.setVisible(true);
+									operacion.setModal(true);
+								}
+							} else {
+								OperacionEspecifica operacion = new OperacionEspecifica("Nombre de usuario en uso");
+								operacion.setVisible(true);
+								operacion.setModal(true);
+							}
+						}
 					}
 				});
 				okButton.setActionCommand("Registrar");
@@ -155,6 +192,7 @@ public class RegUser extends JDialog {
 				buttonPane.add(cancelButton);
 			}
 		}
+		loadUser(aux);
 	}
 
 	private boolean datosCompletos() {
@@ -162,5 +200,14 @@ public class RegUser extends JDialog {
 				&& !txtPassConfirm.getText().trim().isEmpty() && comboBox.getSelectedItem() != null
 				&& !comboBox.getSelectedItem().toString().equals("Seleccione")
 				&& txtPass.getText().equals(txtPassConfirm.getText());
+	}
+
+	private void loadUser(User aux) {
+		if (aux != null) {
+			txtUser.setText(aux.getUserName());
+			txtPass.setText(aux.getPass());
+			txtPassConfirm.setText(aux.getPass());
+			comboBox.setSelectedItem(aux.getTipo());
+		}
 	}
 }

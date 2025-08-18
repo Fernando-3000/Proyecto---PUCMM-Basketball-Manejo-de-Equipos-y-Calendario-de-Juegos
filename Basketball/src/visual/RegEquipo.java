@@ -11,6 +11,7 @@ import java.awt.dnd.DropTargetAdapter;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -77,7 +78,6 @@ public class RegEquipo extends JDialog {
 	private JButton cancelButton;
 	private Connection conexion; // Conexion
 
-	
 	public static void main(String[] args) {
 		try {
 			RegEquipo dialog = new RegEquipo(null);
@@ -87,13 +87,12 @@ public class RegEquipo extends JDialog {
 			e.printStackTrace();
 		}
 	}
-	
 
 	public RegEquipo(Equipo aux) {
 
 		setResizable(false);
 		setModal(true);
-		setTitle("Registrar Equipo");
+		setTitle((aux == null ? "Registrar Equipo" : "Modificar Equipo"));
 		setBounds(100, 100, 504, 460);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -275,10 +274,8 @@ public class RegEquipo extends JDialog {
 			buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
 			{
-				okButton = new JButton("Registrar");
+				okButton = new JButton((aux == null ? "Registrar Equipo" : "Modificar Equipo"));
 				okButton.setFont(new Font("Tahoma", Font.BOLD, 13));
-				if (aux != null)
-					okButton.setText("Modificar");
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent arg0) {
 						if (aux == null) {
@@ -294,13 +291,12 @@ public class RegEquipo extends JDialog {
 								ArrayList<Juego> misJuegos = new ArrayList<Juego>();
 								ArrayList<Jugador> misJugadores = new ArrayList<Jugador>();
 
-
 								File fotoGuardada = null;
 								if (selectedFile != null) {
 									fotoGuardada = copiarImagenADirectorioApp(selectedFile, txtId.getText());
 								}
 
-								//Guardar Equipo en Base de datos Registrar equipo
+								// Guardar Equipo en Base de datos Registrar equipo
 								boolean regEquipo = DatabaseManager.registrarEquipo(nombre, anio_fundacion, pais,
 										entrenador, propetario, fotoGuardada);
 
@@ -317,7 +313,7 @@ public class RegEquipo extends JDialog {
 								operacion.setVisible(true);
 								operacion.setModal(true);
 							}
-						} else {
+						} else {// Para modificar equipo
 
 							if (selectedFile != null && !selectedFile.equals(aux.getImagenLogoFile())) {
 								File fotoGuardada = copiarImagenADirectorioApp(selectedFile, aux.getId());
@@ -476,17 +472,34 @@ public class RegEquipo extends JDialog {
 			txtDueno.setText(aux.getDueno());
 			cmbxPais.setSelectedItem(aux.getPais());
 			spnAnoFund.setValue(aux.getAnoFundacion());
-			selectedFile = aux.getImagenLogoFile();
+			BufferedImage imagen = aux.getImagenLogo();
 
 			if (selectedFile != null) {
-				displayImage(selectedFile);
+				mostrarImagenBuffered(imagen);
 			} else {
 				imageDisplayLabel.setIcon(null);
 				imageDisplayLabel.setText("No hay imagen seleccionada");
 			}
-
 			updateButtonText();
 		}
+	}
+
+	// Para mostrar la imagen en el panel
+	private void mostrarImagenBuffered(BufferedImage imagen) {
+		panel.removeAll();
+		panel.setLayout(new BorderLayout());
+		try {
+			Image scaled = imagen.getScaledInstance(panel.getWidth() - 2, panel.getHeight() - 2, Image.SCALE_SMOOTH);
+			JLabel label = new JLabel(new ImageIcon(scaled));
+			label.setHorizontalAlignment(SwingConstants.CENTER);
+			label.setVerticalAlignment(SwingConstants.CENTER);
+			panel.add(label, BorderLayout.CENTER);
+		} catch (Exception e) {
+			JLabel label = new JLabel("Error al cargar", SwingConstants.CENTER);
+			panel.add(label, BorderLayout.CENTER);
+		}
+		panel.revalidate();
+		panel.repaint();
 	}
 
 	private void clean() {

@@ -156,6 +156,7 @@ public class ListadoEquipos extends JDialog {
 				RegEquipo regEquipo = new RegEquipo(null);
 				regEquipo.setVisible(true);
 				regEquipo.setModal(true);
+				loadAll(null);
 			}
 		});
 
@@ -217,7 +218,7 @@ public class ListadoEquipos extends JDialog {
 						operacion.setVisible(true);
 						operacion.setModal(true);
 					} else {
-						new OperacionEspecifica("No se pudo eliminar el usuario");
+						new OperacionEspecifica("No se pudo eliminar el Equipo");
 					}
 
 					modificarBtn.setEnabled(false);
@@ -251,8 +252,9 @@ public class ListadoEquipos extends JDialog {
 		});
 		buttonPanel.add(volverBtn);
 		getContentPane().add(mainPanel);
-
+		
 		loadAll(null);
+		
 		String miUser = DatabaseManager.tipoUserConectado;
 		if (miUser != null) {
 			if (!miUser.equals("Administrador")) {
@@ -260,6 +262,10 @@ public class ListadoEquipos extends JDialog {
 				registrarBtn.setVisible(false);
 				btnEliminar.setVisible(false);
 			}
+		} else {
+			modificarBtn.setVisible(false);
+			registrarBtn.setVisible(false);
+			btnEliminar.setVisible(false);
 		}
 
 	}

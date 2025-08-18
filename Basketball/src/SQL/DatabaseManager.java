@@ -28,6 +28,13 @@ public class DatabaseManager {
 
 	// Conexion a Servidor
 	static Connection conexion = Conexion.getConexion();
+	
+	
+	public static void cerrarConexion() throws SQLException {
+        if (!conexion.isClosed()) {
+            try { conexion.close(); } catch (SQLException e) { e.printStackTrace(); }
+        }
+    }
 
 	public static boolean validarInicioSesion(String usuario, String contrasena) {
 		try {
@@ -143,11 +150,35 @@ public class DatabaseManager {
 			return false;
 		}
 	}
+	
+	// Actualizar un usuario de la base de datos
+		public static boolean actualizarUsuario(String nombre_Antiguo, String nombre, String contrasena, String tipo) {
+
+			try {
+				String consulta = "UPDATE Usuario SET Nombre_usuario = ?, Password = ?, Tipo = ? WHERE Nombre_usuario = ?";
+				PreparedStatement preparedStatement = conexion.prepareStatement(consulta);
+				preparedStatement.setString(1, nombre);
+				preparedStatement.setString(2, contrasena);
+				preparedStatement.setString(3, tipo);
+				preparedStatement.setString(4, nombre_Antiguo);
+				int filasAfectadas = preparedStatement.executeUpdate();
+
+				if (filasAfectadas > 0) {
+					return true;
+				} else {
+					return false;
+				}
+
+			} catch (SQLException exception) {
+				JOptionPane.showMessageDialog(null, exception.toString());
+				return false;
+			}
+		}
 
 	// Busca y devuelve objeto Usuario de la base de datos
 	public static User buscarUsuario(String nombre_Usuario) {
 		try {
-			String consulta = "SELECT Nombre_usuario, Tipo FROM Usuario WHERE Nombre_usuario = ?";
+			String consulta = "SELECT Nombre_usuario, Password, Tipo FROM Usuario WHERE Nombre_usuario = ?";
 			PreparedStatement preparedStatement = conexion.prepareStatement(consulta);
 			preparedStatement.setString(1, nombre_Usuario);
 			ResultSet resultado = preparedStatement.executeQuery();
@@ -155,7 +186,8 @@ public class DatabaseManager {
 			if (resultado.next()) {
 				String nombre_usuario = resultado.getString("Nombre_usuario");
 				String tipo_usuario = resultado.getString("Tipo");
-				return new User(tipo_usuario, nombre_usuario);
+				String password = resultado.getString("Password");
+				return new User(tipo_usuario, nombre_usuario, password);
 			} else {
 				return null;
 			}
@@ -229,7 +261,8 @@ public class DatabaseManager {
 		}
 	}
 
-	// Eliminar un Equipo de la base de datos por id
+
+	// Eliminar un Jugador de la base de datos por id
 	public static boolean eliminarJugador(String ID_Jugador) {
 		try {
 			String consulta = "DELETE FROM Jugador WHERE ID_Jugador = ?";

@@ -158,7 +158,7 @@ public class PsimulacionJuego extends JDialog {
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		contentPanel.setLayout(null);
 		
-		// Añadir MouseListener al panel principal para detectar clics fuera de las tablas
+		// Aï¿½adir MouseListener al panel principal para detectar clics fuera de las tablas
 		contentPanel.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -322,7 +322,7 @@ public class PsimulacionJuego extends JDialog {
 		panelE1.setLayout(new BorderLayout());
 		contentPanel.add(panelE1);
 		
-		// Añadir MouseListener al panel del equipo 1 para detectar clics fuera de la tabla
+		// Aï¿½adir MouseListener al panel del equipo 1 para detectar clics fuera de la tabla
 		panelE1.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -339,7 +339,7 @@ public class PsimulacionJuego extends JDialog {
 		panelE2.setLayout(new BorderLayout());
 		contentPanel.add(panelE2);
 		
-		// Añadir MouseListener al panel del equipo 2 para detectar clics fuera de la tabla
+		// Aï¿½adir MouseListener al panel del equipo 2 para detectar clics fuera de la tabla
 		panelE2.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -378,11 +378,11 @@ public class PsimulacionJuego extends JDialog {
 		contentPanel.add(panel_2);
 		panel_2.setLayout(null);
 		
-		// Añadir MouseListener al panel de botones para detectar clics
+		// Aï¿½adir MouseListener al panel de botones para detectar clics
 		panel_2.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				// Solo deseleccionar si el clic fue en el panel pero no en un botón
+				// Solo deseleccionar si el clic fue en el panel pero no en un botï¿½n
 				if (e.getComponent() == panel_2) {
 					deseleccionarJugador();
 				}
@@ -606,7 +606,8 @@ public class PsimulacionJuego extends JDialog {
 		}
 	}
 	
-	// Método para deseleccionar el jugador
+	
+	// Mï¿½todo para deseleccionar el jugador
 	private void deseleccionarJugador() {
 		// Limpiar selecciones de ambas tablas
 		if (tableE1 != null) {
@@ -623,7 +624,7 @@ public class PsimulacionJuego extends JDialog {
 		habilitarBotones(false);
 	}
 	
-	// Método para habilitar o deshabilitar botones de acción
+	// Mï¿½todo para habilitar o deshabilitar botones de acciï¿½n
 	private void habilitarBotones(boolean habilitar) {
 		btnTapon.setEnabled(habilitar);
 		btnAsistencia.setEnabled(habilitar);

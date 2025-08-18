@@ -44,6 +44,7 @@ public class ListadoUsuarios extends JDialog {
 	private JButton btnRegistrar;
 	private JButton btnEliminar;
 	private JButton btnVolver;
+	private JButton btnModificar;
 	private JScrollPane scrollPane;
 	private User userSeleccionado = null;
 	private JTextField searchField;
@@ -110,6 +111,7 @@ public class ListadoUsuarios extends JDialog {
 					searchField.setEnabled(true);
 					searchField.setText("");
 					btnEliminar.setEnabled(false);
+					btnModificar.setEnabled(false);
 					userSeleccionado = null;
 				}
 			}
@@ -148,6 +150,7 @@ public class ListadoUsuarios extends JDialog {
 					//Buscar el usuario por username y devuelve un objeto usuario
 					userSeleccionado = DatabaseManager.buscarUsuario(username);
 					btnEliminar.setEnabled(true);
+					btnModificar.setEnabled(true);
 				}
 			}
 		});
@@ -193,12 +196,34 @@ public class ListadoUsuarios extends JDialog {
 		btnRegistrar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				btnEliminar.setEnabled(true);
-				RegUser usuario = new RegUser();
-				usuario.setVisible(true);
-				usuario.setModal(true);
+				RegUser regUsuario = new RegUser(null);
+				regUsuario.setVisible(true);
+				regUsuario.setModal(true);
 				loadAll();
 			}
 		});
+		
+		//Modificar Usuario
+		btnModificar = new JButton("Modificar");
+		btnModificar.setEnabled(false);
+		btnModificar.setFont(new Font("Tahoma", Font.BOLD, 13));
+		buttonPane.add(btnModificar);
+		btnModificar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (userSeleccionado != null) {
+					//  Modificar usuario seleccionado
+					String nombre_Usuario = userSeleccionado.getUserName();
+					User usuario = DatabaseManager.buscarUsuario(nombre_Usuario);
+					RegUser regUsuario = new RegUser(usuario);
+					regUsuario.setVisible(true);
+					regUsuario.setModal(true);
+					loadAll();
+				}
+			}
+		});
+		
+		
+		
 		buttonPane.add(btnVolver);
 		loadAll();
 	}

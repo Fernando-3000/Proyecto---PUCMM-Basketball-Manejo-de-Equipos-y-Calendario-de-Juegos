@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.sql.SQLException;
 import java.awt.event.ActionEvent;
 import java.awt.Font;
 import javax.swing.JMenu;
@@ -93,26 +94,12 @@ public class PrincipalVisual extends JFrame {
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
-				FileOutputStream serieOut;
-				ObjectOutputStream serieWrite;
-
-				File directory = new File("rec/data");
-				if (!directory.exists()) {
-					directory.mkdirs();
-				}
-
 				try {
-					serieOut = new FileOutputStream("rec/data/serie.dat");
-					serieWrite = new ObjectOutputStream(serieOut);
-					serieWrite.writeObject(SerieNacional.getInstance());
-				} catch (FileNotFoundException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				} catch (IOException e1) {
+					DatabaseManager.cerrarConexion();
+				} catch (SQLException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-
 			}
 		});
 
@@ -200,7 +187,7 @@ public class PrincipalVisual extends JFrame {
 		mntmRegUsuario = new JMenuItem("Registrar");
 		mntmRegUsuario.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				RegUser usuario = new RegUser();
+				RegUser usuario = new RegUser(null);
 				usuario.setVisible(true);
 				usuario.setModal(true);
 			}

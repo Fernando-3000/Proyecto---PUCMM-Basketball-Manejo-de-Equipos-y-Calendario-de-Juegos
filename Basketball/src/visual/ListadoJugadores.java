@@ -30,6 +30,7 @@ public class ListadoJugadores extends JDialog {
     private JButton volverBtn;
     private JButton modificarBtn;
     private JButton registrarBtn;
+    private JButton btnEliminar;
     private JPanel mainPanel;
     private JPanel searchPanel;
     private JScrollPane scrollPane;
@@ -91,6 +92,7 @@ public class ListadoJugadores extends JDialog {
                     searchField.setText("");
                     modificarBtn.setEnabled(false);
                     consultarBtn.setEnabled(false);
+                    btnEliminar.setEnabled(false);
                     jugadorSeleccionadoId = null;
                 }
             }
@@ -127,6 +129,7 @@ public class ListadoJugadores extends JDialog {
                     //jugadorSeleccionado = SerieNacional.getInstance().searchJugadorById(jugadorId, SerieNacional.getInstance().getMisJugadores());
                     modificarBtn.setEnabled(true);
                     consultarBtn.setEnabled(true);
+                    btnEliminar.setEnabled(true);
                 }
             }
         });
@@ -152,6 +155,7 @@ public class ListadoJugadores extends JDialog {
             public void actionPerformed(ActionEvent e) {
                 modificarBtn.setEnabled(false);
                 consultarBtn.setEnabled(false);
+                btnEliminar.setEnabled(false);
                 jugadorSeleccionadoId = null;
                 RegJugador regJugador = new RegJugador(null);
                 regJugador.setVisible(true);
@@ -172,6 +176,7 @@ public class ListadoJugadores extends JDialog {
                     regJugador.setModal(true);
                     modificarBtn.setEnabled(false);
                     consultarBtn.setEnabled(false);
+                    btnEliminar.setEnabled(false);
                     jugadorSeleccionadoId = null;
                     String text = searchField.getText();
                     if(text.equals("Buscar...") || text.isEmpty()) {
@@ -192,6 +197,7 @@ public class ListadoJugadores extends JDialog {
 	        		conJugador.setModal(true);
 	        		modificarBtn.setEnabled(false);
 	                consultarBtn.setEnabled(false);
+	                btnEliminar.setEnabled(false);
 	                jugadorSeleccionadoId = null;
 	                String text = searchField.getText();
 	                if(text.equals("Buscar...") || text.isEmpty()) {
@@ -202,11 +208,43 @@ public class ListadoJugadores extends JDialog {
         		}
         	}
         });
+        
+        
+        btnEliminar = new JButton("Eliminar");
+		btnEliminar.setEnabled(false);
+		btnEliminar.setFont(boldFont);
+		btnEliminar.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (jugadorSeleccionadoId != null) {
+					if (DatabaseManager.eliminarJugador(jugadorSeleccionadoId)) {
+						OperacionExitosa operacion = new OperacionExitosa();
+						operacion.setVisible(true);
+						operacion.setModal(true);
+					} else {
+						new OperacionEspecifica("No se pudo eliminar el jugador");
+					}
+
+					modificarBtn.setEnabled(false);
+					consultarBtn.setEnabled(false);
+					btnEliminar.setEnabled(false);
+					jugadorSeleccionadoId = null;
+					String text = searchField.getText();
+					if (text.equals("Buscar...") || text.isEmpty()) {
+						loadAll(aux, null);
+	                } else {
+	                    loadAll(aux, text);
+	                }
+				}
+			}
+		});
+        
         consultarBtn.setFont(boldFont);
         consultarBtn.setEnabled(false);
         buttonPanel.add(consultarBtn);
         buttonPanel.add(modificarBtn);
         buttonPanel.add(registrarBtn);
+        buttonPanel.add(btnEliminar);
         
         volverBtn = new JButton("Volver");
         volverBtn.setFont(boldFont);
@@ -220,15 +258,19 @@ public class ListadoJugadores extends JDialog {
         getContentPane().add(mainPanel);
         
         loadAll(aux, null);
-        User miUser = SerieNacional.getLoginUser();
-        if (miUser != null)
-        {
-            if(!miUser.getTipo().equals("Administrador"))
-            {
-            	modificarBtn.setVisible(false);
-            	registrarBtn.setVisible(false);
-            }
-       }
+        
+        String miUser = DatabaseManager.tipoUserConectado;
+		if (miUser != null) {
+			if (!miUser.equals("Administrador")) {
+				modificarBtn.setVisible(false);
+				registrarBtn.setVisible(false);
+				btnEliminar.setVisible(false);
+			}
+		} else {
+			modificarBtn.setVisible(false);
+			registrarBtn.setVisible(false);
+			btnEliminar.setVisible(false);
+		}
         
     }
 
@@ -258,7 +300,8 @@ public class ListadoJugadores extends JDialog {
             if(filtro == null) {
             	//Equipo equipo = DatabaseManager.obtenerEquipoPorId(jugador.getID_Equipo());
                 //row[0] = (equipo != null ? equipo.getNombre() : "No pertenece a ningun equipo");
-            	row[0] = 'd';
+            	
+            	row[0] = (jugador.getID_Equipo() == null) ? "No tiene equipo" : jugador.getID_Equipo();
                 row[1] = jugador.getId();
                 row[2] = jugador.getNombre() + " " + jugador.getApellido();
                 row[3] = jugador.getPosicion();
