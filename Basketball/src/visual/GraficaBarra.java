@@ -78,7 +78,7 @@ public class GraficaBarra extends JPanel {
 
 	            // cara del jugador
 	            BufferedImage imagenJugador = null;
-	            File foto = jugador.getFoto(); 
+	            File foto = jugador.getFotoFile(); 
 	            if (foto != null) {
 	                try {
 	                    imagenJugador = ImageIO.read(foto); 

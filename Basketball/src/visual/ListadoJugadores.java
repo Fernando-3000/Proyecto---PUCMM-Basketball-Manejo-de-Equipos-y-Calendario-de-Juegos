@@ -276,7 +276,7 @@ public class ListadoJugadores extends JDialog {
 
     public static void loadAll(Equipo aux, String filtro) {
     	if (model == null) {
-    		String[] columnNames = {"Equipo", "ID", "Jugador", "Posición", "Número", "Estado de salud"};
+    		String[] columnNames = {"Equipo", "ID", "Jugador", "Posicion", "Numero", "Estado de salud"};
             model = new DefaultTableModel() {
                 @Override
                 public boolean isCellEditable(int row, int column) {
