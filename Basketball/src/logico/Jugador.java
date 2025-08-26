@@ -196,4 +196,14 @@ public class Jugador implements Serializable {
 	public void setID_Equipo(String iD_Equipo) {
 		ID_Equipo = iD_Equipo;
 	}
+
+	public BufferedImage getImagen() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Object getGanador() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

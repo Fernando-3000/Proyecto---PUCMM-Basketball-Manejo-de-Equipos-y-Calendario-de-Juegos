@@ -2,60 +2,83 @@ package logico;
 
 import java.io.Serializable;
 
-public abstract class Estadistica implements Serializable{
+/**
+ * Clase base para estadísticas de jugadores y equipos
+ */
+public abstract class Estadistica implements Serializable {
 
-	protected int cantJuegos;
-	protected int triples;
-	protected int dobles;
-	protected int normales;
-	protected int puntosTot;
-	private static final long serialVersionUID = 1L;
-	
-	public Estadistica(int cantJuegos, int triples, int dobles, int normales, int puntosTot) {
-		super();
-		this.cantJuegos = cantJuegos;
-		this.triples = triples;
-		this.dobles = dobles;
-		this.normales = normales;
-		this.puntosTot = puntosTot;
-	}
+    private static final long serialVersionUID = 1L;
 
-	public int getCantJuegos() {
-		return cantJuegos;
-	}
+    //  Todos los campos NO son static
+    protected int cantJuegos;
+    protected int triples;      //   No debe ser static
+    protected int dobles;       //   No debe ser static
+    protected int normales;     //   No debe ser static
+    protected int puntosTot;
 
-	public void setCantJuegos(int cantJuegos) {
-		this.cantJuegos = cantJuegos;
-	}
+    public Estadistica(int cantJuegos, int triples, int dobles, int normales) {
+        this.cantJuegos = cantJuegos;
+        this.triples = triples;
+        this.dobles = dobles;
+        this.normales = normales;
+        this.puntosTot = calcularPuntos(); //  Calcula al crear
+    }
 
-	public int getTriples() {
-		return triples;
-	}
+    // Constructor por defecto
+    public Estadistica() {
+        this(0, 0, 0, 0);
+    }
 
-	public void setTriples(int triples) {
-		this.triples = triples;
-	}
+    // Getters y setters
+    public int getCantJuegos() {
+        return cantJuegos;
+    }
 
-	public int getDobles() {
-		return dobles;
-	}
+    public void setCantJuegos(int cantJuegos) {
+        this.cantJuegos = cantJuegos;
+    }
 
-	public void setDobles(int dobles) {
-		this.dobles = dobles;
-	}
+    public int getTriples() {
+        return triples;
+    }
 
-	public int getNormales() {
-		return normales;
-	}
+    public void setTriples(int triples) {
+        this.triples = triples;
+        actualizarPuntos(); //  Actualiza puntos al cambiar
+    }
 
-	public void setNormales(int normales) {
-		this.normales = normales;
-	}
+    public int getDobles() {
+        return dobles;
+    }
 
-	public int getPuntosTot() {
-		puntosTot = triples*3 + dobles*2 + normales;
-		return puntosTot;
-	}
-	
-	public abstract float efectividad();
+    public void setDobles(int dobles) {
+        this.dobles = dobles;
+        actualizarPuntos(); //  Actualiza puntos al cambiar
+    }
+
+    public int getNormales() {
+        return normales;
+    }
+
+    public void setNormales(int normales) {
+        this.normales = normales;
+        actualizarPuntos(); //  Actualiza puntos al cambiar
+    }
+
+    public int getPuntosTot() {
+        return puntosTot;
+    }
+
+    //  Método privado para calcular puntos
+    private int calcularPuntos() {
+        return triples * 3 + dobles * 2 + normales;
+    }
+
+    //  Actualiza puntos cuando cambia cualquier valor
+    private void actualizarPuntos() {
+        this.puntosTot = calcularPuntos();
+    }
+
+    //  Método abstracto para efectividad
+    public abstract float efectividad();
 }

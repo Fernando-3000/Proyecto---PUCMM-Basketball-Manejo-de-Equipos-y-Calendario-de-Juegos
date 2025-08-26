@@ -1,102 +1,112 @@
 package visual;
+
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.RowFilter;
 import javax.swing.table.DefaultTableModel;
-import java.awt.Font;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
+import javax.swing.table.TableRowSorter;
 
 import logico.Equipo;
 import logico.Juego;
 import logico.Jugador;
-import logico.SerieNacional;
+import SQL.DatabaseManager;
 
 public class ListadoJuegos extends JDialog {
-    /**
-     * 
-     */
+
     private static final long serialVersionUID = 1L;
     private final JPanel contentPanel = new JPanel();
     private JTable table;
-    private static DefaultTableModel modeloTabla;
-    private static Object[] row;
+    private DefaultTableModel modeloTabla;
+    private Object[] row;
     private Juego juegoSeleccionado = null;
     private JTextField searchField;
     private JPanel searchPanel;
     private JButton btnConsultar;
     private JButton btnGenerar;
     private JButton btnVolver;
-    
-    /**
-     * Launch the application.
-     */
-    public static void main(String[] args) {
-        try {
-            ListadoJuegos dialog = new ListadoJuegos(null);
-            dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-            dialog.setVisible(true);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-    
-    /**
-     * Create the dialog.
-     */
+    private String filtroEquipoOJugador;
+    private TableRowSorter<DefaultTableModel> sorter;
+    private PsimulacionJuego ventana;
+
     public ListadoJuegos(String filtro) {
-    	setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        this.filtroEquipoOJugador = filtro;
+
+        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         setResizable(false);
         setModal(true);
         setTitle("Listado de Juegos");
-        setBounds(100, 100, 800, 500);  
+        setBounds(100, 100, 850, 520);
         setLocationRelativeTo(null);
         getContentPane().setLayout(new BorderLayout());
-        contentPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         getContentPane().add(contentPanel, BorderLayout.CENTER);
         contentPanel.setLayout(new BorderLayout());
-        
+
         searchPanel = new JPanel(new BorderLayout());
         searchField = new JTextField("Buscar...");
-        searchField.setPreferredSize(new Dimension(200, 30));
+        searchField.setPreferredSize(new Dimension(250, 35));
+        searchField.setFont(new Font("Tahoma", Font.PLAIN, 13));
         searchField.setEnabled(false);
-        
-        searchField.addMouseListener(new MouseAdapter() {
+
+        searchField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             @Override
-            public void mouseEntered(MouseEvent arg0) {
-                if (searchField.getText().equals("Buscar...")) {
-                    searchField.setEnabled(true);
-                    searchField.setText("");
-                    juegoSeleccionado = null;
-                }
-            }
-            
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { filtrar(); }
             @Override
-            public void mouseExited(MouseEvent e) {
-                if (searchField.getText().equals("")) {
-                    searchField.setEnabled(false);
-                    searchField.setText("Buscar...");
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { filtrar(); }
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { filtrar(); }
+
+            private void filtrar() {
+                String text = searchField.getText().trim();
+                if (text.isEmpty() || text.equals("Buscar...")) {
+                    sorter.setRowFilter(null);
+                } else {
+                    sorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));
                 }
             }
         });
-        
-        searchPanel.add(new JLabel("Barra de búsqueda:   "), BorderLayout.WEST);
+
+        searchField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                if (searchField.getText().equals("Buscar...")) {
+                    searchField.setText("");
+                    searchField.setEnabled(true);
+                    juegoSeleccionado = null;
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if (searchField.getText().isEmpty()) {
+                    searchField.setText("Buscar...");
+                    searchField.setEnabled(false);
+                }
+            }
+        });
+
+        searchPanel.add(new JLabel("Buscar: "), BorderLayout.WEST);
         searchPanel.add(searchField, BorderLayout.CENTER);
         contentPanel.add(searchPanel, BorderLayout.NORTH);
-        
+
         String[] columnas = {"ID", "Equipo de Casa", "Equipo de Visita", "Ganador"};
         modeloTabla = new DefaultTableModel(columnas, 0) {
             @Override
@@ -104,172 +114,166 @@ public class ListadoJuegos extends JDialog {
                 return false;
             }
         };
-         
+
         table = new JTable(modeloTabla);
+        table.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        table.setRowHeight(25);
+        sorter = new TableRowSorter<>(modeloTabla);
+        table.setRowSorter(sorter);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 int index = table.getSelectedRow();
-                if(index != -1) {
-                    String juegoId = table.getValueAt(index, 0).toString();
-                    juegoSeleccionado = SerieNacional.getInstance().searchJuegoById(juegoId, SerieNacional.getInstance().getMisJuegos());
+                if (index != -1) {
+                    String id = table.getValueAt(index, 0).toString();
+                    juegoSeleccionado = DatabaseManager.obtenerJuegoPorId(id);
                 }
             }
         });
-        
+
         JScrollPane scrollPane = new JScrollPane(table);
         contentPanel.add(scrollPane, BorderLayout.CENTER);
-         
+
         JPanel buttonPane = new JPanel();
         buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
         getContentPane().add(buttonPane, BorderLayout.SOUTH);
-         
+
         btnConsultar = new JButton("Consultar");
         btnConsultar.setFont(new Font("Tahoma", Font.BOLD, 13));
-        btnConsultar.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (juegoSeleccionado != null) {
-                	ConsultaJuego consultaJuego = new ConsultaJuego(juegoSeleccionado);
-                    consultaJuego.setVisible(true);
-                	consultaJuego.setModal(true);
-                }
+        btnConsultar.addActionListener(e -> {
+            if (juegoSeleccionado != null) {
+                ConsultaJuego consulta = new ConsultaJuego(juegoSeleccionado);
+                consulta.setModal(true);
+                consulta.setVisible(true);
             }
         });
         btnConsultar.setVisible(false);
-        
+        buttonPane.add(btnConsultar);
+
         btnGenerar = new JButton("Generar");
         btnGenerar.setFont(new Font("Tahoma", Font.BOLD, 13));
-        btnGenerar.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-	            
-            	if(SerieNacional.getInstance().getMisEquipos().size() >= 5)
-            	{
-	            		SerieNacional.getInstance().generarJuegos();
-	            		loadAll(filtro);
-	            		btnConsultar.setVisible(true);
-	            		btnGenerar.setVisible(false);
-            	}
+        btnGenerar.addActionListener(e -> {
+            ArrayList<Equipo> equipos = DatabaseManager.listarEquipo();
+            if (equipos.size() < 5) {
+                JOptionPane.showMessageDialog(this,
+                    "Se necesitan al menos 5 equipos para generar juegos.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            ArrayList<Juego> nuevosJuegos = new ArrayList<>();
+            for (int i = 0; i < equipos.size(); i++) {
+                for (int j = 0; j < equipos.size(); j++) {
+                    if (i != j) {
+                        String id = DatabaseManager.obtenerProximoIdJuego();
+                        Juego juego = new Juego(id, equipos.get(i), equipos.get(j));
+                        nuevosJuegos.add(juego);
+                    }
+                }
+            }
+
+            boolean todosGuardados = true;
+            for (Juego juego : nuevosJuegos) {
+                if (DatabaseManager.obtenerJuegoPorId(juego.getId()) == null) {
+                    boolean exito = DatabaseManager.registrarJuego(
+                        juego.getId(),
+                        juego.getHome().getId(),
+                        juego.getAway().getId(),
+                        null
+                    );
+                    if (!exito) todosGuardados = false;
+                }
+            }
+
+            if (todosGuardados) {
+                JOptionPane.showMessageDialog(this, "Juegos generados correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                btnGenerar.setVisible(false);
+                btnConsultar.setVisible(true);
+                loadAll();
+            } else {
+                JOptionPane.showMessageDialog(this, "Error al guardar algunos juegos.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
-        
-        if (filtro != null)
-        {
-        	String str = "";
-        	btnGenerar.setVisible(false);
-        	setTitle("Listado de Juegos");
-        	Equipo equ = SerieNacional.getInstance().searchEquipoById(filtro, SerieNacional.getInstance().getMisEquipos());
-            Jugador jug = SerieNacional.getInstance().searchJugadorById(filtro, SerieNacional.getInstance().getMisJugadores());
 
-             if (equ != null)
-            	 str = equ.getNombre();
-             
-             if (jug != null)
-            	 str = jug.getNombre()+jug.getApellido();
-             
-             setTitle("Listado de Juegos | " + str);
+        if (!DatabaseManager.listarJuegos().isEmpty()) {
+            btnGenerar.setVisible(false);
+            btnConsultar.setVisible(true);
         }
-        
+
+        if (filtro != null) {
+            btnGenerar.setVisible(false);
+            Equipo equ = DatabaseManager.obtenerEquipoPorId(filtro);
+            Jugador jug = DatabaseManager.obtenerJugadorPorId(filtro);
+            String nombre = equ != null ? equ.getNombre() : (jug != null ? jug.getNombre() + " " + jug.getApellido() : filtro);
+            setTitle("Listado de Juegos | " + nombre);
+        }
+
         btnVolver = new JButton("Volver");
         btnVolver.setFont(new Font("Tahoma", Font.BOLD, 13));
-        btnVolver.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                dispose();    
-            }
-        });
-        
-        buttonPane.add(btnConsultar);
-        buttonPane.add(btnGenerar);
+        btnVolver.addActionListener(e -> dispose());
         buttonPane.add(btnVolver);
-        
-        if (SerieNacional.getInstance().getMisEquipos().size() >= 5)
-        {
-        	btnGenerar.setVisible(true);
+
+        if (filtro == null) {
+            buttonPane.add(btnGenerar);
         }
 
-        loadAll(filtro);
-        
-        if (SerieNacional.getInstance().getMisJuegos().size() > 0)
-        {
-        	btnGenerar.setVisible(false);
-        	btnConsultar.setVisible(true);
+        loadAll();
+    }
+
+    public void loadAll() {
+        modeloTabla.setRowCount(0);
+        row = new Object[4];
+
+        ArrayList<Juego> juegos = (filtroEquipoOJugador == null)
+            ? DatabaseManager.listarJuegos()
+            : DatabaseManager.listarJuegosPorEquipo(filtroEquipoOJugador);
+
+        for (Juego juego : juegos) {
+            row[0] = juego.getId();
+            row[1] = juego.getHome().getNombre();
+            row[2] = juego.getAway().getNombre();
+            row[3] = (juego.getGanador() == null || juego.getGanador().trim().isEmpty()) ? "Pendiente" : juego.getGanador();
+            modeloTabla.addRow(row.clone());
         }
     }
 
-    public static void loadAll(String filtro) {
-        if (modeloTabla == null) {
-            String[] columnas = {"ID", "Equipo de Casa", "Equipo de Visita", "Ganador"};
-            modeloTabla = new DefaultTableModel(columnas, 0) {
-                @Override
-                public boolean isCellEditable(int row, int column) {
-                    return false;
-                }
-            };
-        }
-        
+    public void loadPendingGames() {
         modeloTabla.setRowCount(0);
-        row = new Object[modeloTabla.getColumnCount()];
-        ArrayList<Juego> juegos = SerieNacional.getInstance().getMisJuegos();;
-        Equipo equ = SerieNacional.getInstance().searchEquipoById(filtro, SerieNacional.getInstance().getMisEquipos());
-        Jugador jug = SerieNacional.getInstance().searchJugadorById(filtro, SerieNacional.getInstance().getMisJugadores());
+        row = new Object[4];
+        ArrayList<Juego> juegos = DatabaseManager.listarJuegos();
 
-        if (equ != null)
-        	juegos = equ.getJuegos();
-        
-        if (jug != null)
-        	juegos = jug.getJuegos();
-        
         for (Juego juego : juegos) {
+            if (juego.getGanador() == null || juego.getGanador().trim().isEmpty()) {
                 row[0] = juego.getId();
                 row[1] = juego.getHome().getNombre();
                 row[2] = juego.getAway().getNombre();
-                row[3] = juego.getGanador();
-                modeloTabla.addRow(row);
+                row[3] = "Pendiente";
+                modeloTabla.addRow(row.clone());
             }
         }
-
-	public static void loadFew() {
-	    if (modeloTabla == null) {
-	        String[] columnas = {"ID", "Equipo de Casa", "Equipo de Visita", "Ganador"};
-	        modeloTabla = new DefaultTableModel(columnas, 0) {
-	            @Override
-	            public boolean isCellEditable(int row, int column) {
-	                return false;
-	            }
-	        };
-	    }
-	    
-	    modeloTabla.setRowCount(0);
-	    row = new Object[modeloTabla.getColumnCount()];
-	    ArrayList<Juego> juegos = SerieNacional.getInstance().getMisJuegos();	    
-	    for (Juego juego : juegos) {
-	    	if (juego.getGanador() == null)
-	    	{
-	            row[0] = juego.getId();
-	            row[1] = juego.getHome().getNombre();
-	            row[2] = juego.getAway().getNombre();
-	            row[3] = juego.getGanador();
-	            modeloTabla.addRow(row);
-	    	}
-	    }
-	}
+    }
 
     public void seleccionarJuego(PsimulacionJuego ventana) {
-		btnConsultar.setVisible(false);
-		setTitle("Seleccionar Juego");
-		loadFew();
-	    table.addMouseListener(new MouseAdapter() {
-	        @Override
-	        public void mouseClicked(MouseEvent e) {
-	                int index = table.getSelectedRow();
-	                if(index != -1) {
-	                    String juegoId = table.getValueAt(index, 0).toString();
-	                    Juego juegoSeleccionado = SerieNacional.getInstance().searchJuegoById(juegoId, 
-	                                               SerieNacional.getInstance().getMisJuegos());
-	                    ventana.setJuegoSeleccionado(juegoSeleccionado);
-	                    dispose();
-	                }
-	        }
-	    });
-	}
+        this.ventana = ventana;
+        btnConsultar.setVisible(false);
+        btnGenerar.setVisible(false);
+        setTitle("Seleccionar Juego");
+        loadPendingGames();
+
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int index = table.getSelectedRow();
+                if (index != -1) {
+                    String id = table.getValueAt(index, 0).toString();
+                    Juego juego = DatabaseManager.obtenerJuegoPorId(id);
+                    if (juego != null && (juego.getGanador() == null || juego.getGanador().trim().isEmpty())) {
+                        ventana.setJuegoSeleccionado(juego);
+                        dispose();
+                    }
+                }
+            }
+        });
+    }
 }

@@ -2,6 +2,11 @@ package visual;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -9,19 +14,10 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
-import logico.Jugador;
 import logico.Juego;
-import logico.Equipo;
-
-import java.awt.Font;
-import java.awt.Color;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
+import SQL.DatabaseManager;
 
 public class ConsultaJuego extends JDialog {
-    /**
-     * 
-     */
     private static final long serialVersionUID = 1L;
     private final JPanel contentPanel = new JPanel();
     private JTextField txtId;
@@ -32,7 +28,7 @@ public class ConsultaJuego extends JDialog {
     private JTextField txtGanador;
 
     /**
-     * Launch the application.
+     * Launch the application (para pruebas)
      */
     public static void main(String[] args) {
         try {
@@ -47,102 +43,113 @@ public class ConsultaJuego extends JDialog {
     /**
      * Create the dialog.
      */
-    public ConsultaJuego(Juego aux) {
+    public ConsultaJuego(Juego juego) {
         setModal(true);
         setResizable(false);
         setTitle("Consulta de Juego");
-        setBounds(100, 100, 370, 298);
+        setBounds(100, 100, 400, 320);
         setLocationRelativeTo(null);
         getContentPane().setLayout(new BorderLayout());
-        contentPanel.setBackground(new Color(255, 255, 255));
-        contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+        
+        contentPanel.setBackground(Color.WHITE);
+        contentPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
         getContentPane().add(contentPanel, BorderLayout.CENTER);
-
         contentPanel.setLayout(null);
 
-        JLabel lblId = new JLabel("ID:");
-        lblId.setBounds(20, 20, 100, 16);
+        // === Etiquetas y Campos ===
+
+        JLabel lblId = new JLabel("ID del Juego:");
+        lblId.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        lblId.setBounds(30, 20, 120, 16);
         contentPanel.add(lblId);
 
         txtId = new JTextField();
         txtId.setEditable(false);
-        txtId.setBounds(180, 17, 150, 22);
+        txtId.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        txtId.setBounds(180, 17, 170, 25);
         contentPanel.add(txtId);
 
         JLabel lblEquipoCasa = new JLabel("Equipo Local:");
-        lblEquipoCasa.setBounds(20, 50, 100, 16);
+        lblEquipoCasa.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        lblEquipoCasa.setBounds(30, 60, 120, 16);
         contentPanel.add(lblEquipoCasa);
 
         txtEquipoCasa = new JTextField();
         txtEquipoCasa.setEditable(false);
-        txtEquipoCasa.setBounds(180, 47, 150, 22);
+        txtEquipoCasa.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        txtEquipoCasa.setBounds(180, 57, 170, 25);
         contentPanel.add(txtEquipoCasa);
 
         JLabel lblEquipoVisita = new JLabel("Equipo Visitante:");
-        lblEquipoVisita.setBounds(20, 80, 100, 16);
+        lblEquipoVisita.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        lblEquipoVisita.setBounds(30, 95, 120, 16);
         contentPanel.add(lblEquipoVisita);
 
         txtEquipoVisita = new JTextField();
         txtEquipoVisita.setEditable(false);
-        txtEquipoVisita.setBounds(180, 77, 150, 22);
+        txtEquipoVisita.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        txtEquipoVisita.setBounds(180, 92, 170, 25);
         contentPanel.add(txtEquipoVisita);
 
         JLabel lblMarcadorCasa = new JLabel("Marcador Local:");
-        lblMarcadorCasa.setBounds(20, 110, 100, 16);
+        lblMarcadorCasa.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        lblMarcadorCasa.setBounds(30, 130, 120, 16);
         contentPanel.add(lblMarcadorCasa);
 
         txtMarcadorCasa = new JTextField();
         txtMarcadorCasa.setEditable(false);
-        txtMarcadorCasa.setBounds(180, 107, 150, 22);
+        txtMarcadorCasa.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        txtMarcadorCasa.setBounds(180, 127, 170, 25);
         contentPanel.add(txtMarcadorCasa);
 
         JLabel lblMarcadorVisita = new JLabel("Marcador Visitante:");
-        lblMarcadorVisita.setBounds(20, 140, 150, 16);
+        lblMarcadorVisita.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        lblMarcadorVisita.setBounds(30, 165, 130, 16);
         contentPanel.add(lblMarcadorVisita);
 
         txtMarcadorVisita = new JTextField();
         txtMarcadorVisita.setEditable(false);
-        txtMarcadorVisita.setBounds(180, 137, 150, 22);
+        txtMarcadorVisita.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        txtMarcadorVisita.setBounds(180, 162, 170, 25);
         contentPanel.add(txtMarcadorVisita);
 
         JLabel lblGanador = new JLabel("Ganador:");
-        lblGanador.setBounds(20, 170, 100, 16);
+        lblGanador.setFont(new Font("Tahoma", Font.BOLD, 14));
+        lblGanador.setBounds(30, 200, 120, 16);
         contentPanel.add(lblGanador);
 
         txtGanador = new JTextField();
-        txtGanador.setBounds(180, 167, 150, 22);
-        txtGanador.setEditable(false); // Solo lectura
+        txtGanador.setEditable(false);
+        txtGanador.setFont(new Font("Tahoma", Font.PLAIN, 14));
+        txtGanador.setForeground(Color.BLUE);
+        txtGanador.setBounds(180, 197, 170, 25);
         contentPanel.add(txtGanador);
 
+        // === Botón Cerrar ===
         JPanel buttonPane = new JPanel();
         buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
         getContentPane().add(buttonPane, BorderLayout.SOUTH);
 
-        JButton btnCancel = new JButton("Volver");
+        JButton btnCancel = new JButton("Cerrar");
         btnCancel.setFont(new Font("Tahoma", Font.BOLD, 13));
-        btnCancel.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-            }
-        });
+        btnCancel.addActionListener(e -> dispose());
         buttonPane.add(btnCancel);
-        
-        // Cargar los datos del juego
-        loadJuego(aux);
+
+        // === Cargar datos del juego ===
+        loadJuego(juego);
     }
-    
+
     /**
-     * Carga los datos del juego en los campos de la ventana
+     * Carga los datos del juego en los campos
      */
-    public void loadJuego(Juego aux) {
-        if (aux == null)
-            return;
-            
-        txtId.setText(aux.getId());
-        txtEquipoCasa.setText(aux.getHome().getId() + " " + aux.getHome().getNombre());
-        txtEquipoVisita.setText(aux.getAway().getId() + " " + aux.getAway().getNombre());
-        txtMarcadorCasa.setText(Integer.toString(aux.getMarcadorCasa()));
-        txtMarcadorVisita.setText(Integer.toString(aux.getMarcadorAway()));
-        txtGanador.setText(aux.getGanador());
+    public void loadJuego(Juego juego) {
+        if (juego == null) return;
+
+        txtId.setText(juego.getId());
+        txtEquipoCasa.setText(juego.getHome().getNombre());
+        txtEquipoVisita.setText(juego.getAway().getNombre());
+        txtMarcadorCasa.setText(String.valueOf(juego.getMarcadorCasa()));
+        txtMarcadorVisita.setText(String.valueOf(juego.getMarcadorAway()));
+        txtGanador.setText(juego.getGanador() != null ? juego.getGanador() : "No definido");
     }
 }

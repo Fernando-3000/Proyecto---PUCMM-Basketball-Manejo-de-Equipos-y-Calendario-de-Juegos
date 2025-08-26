@@ -1,81 +1,70 @@
 package logico;
 
-import java.io.Serializable;
+public class EstJugador {
+    private int cantJuegos;
+    private int triples;
+    private int dobles;
+    private int normales;
+    private int puntosTot;
+    private int robos;
+    private int tapones;
+    private int asistencias;
+    private int faltas;
+    private int mvp;
 
-public class EstJugador extends Estadistica{
-	private int robos;
-	private int tapones;
-	private int asistencias;
-	private int faltas;
-	private int mvp;
-	
-	public EstJugador(int cantJuegos, int triples, int dobles, int normales, int puntosTot, int robos, int tapones,
-			int asistencias, int faltas, int mvp) {
-		super(cantJuegos, triples, dobles, normales, puntosTot);
-		this.robos = robos;
-		this.tapones = tapones;
-		this.asistencias = asistencias;
-		this.faltas = faltas;
-		this.mvp = mvp;
-	}
-	
-	@Override
-	public float efectividad() {
-	    if (cantJuegos == 0) {
-	        return 0.0f;}
-	    
-	    float puntosPorJuego = (float) puntosTot / cantJuegos;
-	    
-	    float puntosEfectivos = triples * 3.0f + dobles * 2.0f + normales * 1.0f;
-	    float eficienciaTiros = puntosEfectivos / puntosTot;
+    // Constructor vacío
+    public EstJugador() {
+        this(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    }
 
-	    float contribucionesDefensivas = (robos * 2.0f + tapones * 1.8f) / cantJuegos;
-	    float contribucionesOfensivas = (asistencias * 1.5f + puntosPorJuego) / cantJuegos;
-	    
-	    float penalizaciones = faltas / (float) cantJuegos * 1.2f;
-	    
-	    float bonusMVP = mvp * 5.0f;
-	    
-	    return (contribucionesDefensivas + contribucionesOfensivas - penalizaciones + bonusMVP) * eficienciaTiros * 10.0f;
-	}
+    // Constructor completo
+    public EstJugador(int cantJuegos, int triples, int dobles, int normales, int puntosTot,
+                      int robos, int tapones, int asistencias, int faltas, int mvp) {
+        this.cantJuegos = cantJuegos;
+        this.triples = triples;
+        this.dobles = dobles;
+        this.normales = normales;
+        this.puntosTot = puntosTot;
+        this.robos = robos;
+        this.tapones = tapones;
+        this.asistencias = asistencias;
+        this.faltas = faltas;
+        this.mvp = mvp;
+    }
 
-	public int getRobos() {
-		return robos;
-	}
+    // Getters y setters...
+    public int getCantJuegos() { return cantJuegos; }
+    public void setCantJuegos(int cantJuegos) { this.cantJuegos = cantJuegos; }
 
-	public void setRobos(int robos) {
-		this.robos = robos;
-	}
+    public int getTriples() { return triples; }
+    public void setTriples(int triples) { this.triples = triples; }
 
-	public int getTapones() {
-		return tapones;
-	}
+    public int getDobles() { return dobles; }
+    public void setDobles(int dobles) { this.dobles = dobles; }
 
-	public void setTapones(int tapones) {
-		this.tapones = tapones;
-	}
+    public int getNormales() { return normales; }
+    public void setNormales(int normales) { this.normales = normales; }
 
-	public int getAsistencias() {
-		return asistencias;
-	}
+    public int getPuntosTot() { return puntosTot; }
+    public void setPuntosTot(int puntosTot) { this.puntosTot = puntosTot; }
 
-	public void setAsistencias(int asistencias) {
-		this.asistencias = asistencias;
-	}
+    public int getRobos() { return robos; }
+    public void setRobos(int robos) { this.robos = robos; }
 
-	public int getFaltas() {
-		return faltas;
-	}
+    public int getTapones() { return tapones; }
+    public void setTapones(int tapones) { this.tapones = tapones; }
 
-	public void setFaltas(int faltas) {
-		this.faltas = faltas;
-	}
+    public int intgetAsistencias() { return asistencias; }
+    public void setAsistencias(int asistencias) { this.asistencias = asistencias; }
 
-	public int getMvp() {
-		return mvp;
-	}
+    public int getFaltas() { return faltas; }
+    public void setFaltas(int faltas) { this.faltas = faltas; }
 
-	public void setMvp(int mvp) {
-		this.mvp = mvp;
+    public int getMvp() { return mvp; }
+    public void setMvp(int mvp) { this.mvp = mvp; }
+
+	public double efectividad() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }

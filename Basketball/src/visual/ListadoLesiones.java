@@ -1,316 +1,239 @@
 package visual;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.table.DefaultTableModel;
 
 import logico.Jugador;
 import logico.Lesion;
 import logico.SerieNacional;
 import logico.User;
+import SQL.DatabaseManager;
 
 public class ListadoLesiones extends JDialog {
-   
+
     private static final long serialVersionUID = 1L;
     private JTable table;
-    private static DefaultTableModel model;
-    private static Object[] row;
+    private DefaultTableModel model;
     private Lesion lesionSeleccionada = null;
     private JTextField searchField;
-    private JButton volverBtn;
-    private JButton modificarBtn;
-    private JButton registrarBtn;
-    private JPanel mainPanel;
-    private JPanel searchPanel;
+    private JButton volverBtn, modificarBtn, consultarBtn, registrarBtn;
+    private JPanel mainPanel, searchPanel, buttonPanel;
     private JScrollPane scrollPane;
-    private JButton consultarBtn;
 
-    public ListadoLesiones(Jugador aux) {
-    	setModal(true);
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private TableRowSorter<DefaultTableModel> sorter;
+    private Jugador jugadorFiltro;
+
+    /**
+     * Constructor: muestra el listado de lesiones
+     * @param jugadorFiltro Si no es null, filtra por jugador
+     */
+    public ListadoLesiones(Jugador jugadorFiltro) {
+        this.jugadorFiltro = jugadorFiltro;
+        setModal(true);
         setResizable(false);
-        setTitle("Listado de Lesiones");
-        setSize(800, 500);
+        setTitle(jugadorFiltro != null ? "Lesiones de " + jugadorFiltro.getNombre() : "Listado de Lesiones");
+        setSize(900, 550);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
+        // === Panel principal ===
         mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        mainPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        setContentPane(mainPanel);
 
+        // === Barra de b煤squeda ===
         searchPanel = new JPanel(new BorderLayout());
         searchField = new JTextField("Buscar...");
-        searchField.setPreferredSize(new Dimension(200, 30));
+        searchField.setPreferredSize(new Dimension(250, 35));
+        searchField.setFont(new Font("Tahoma", Font.PLAIN, 13));
         searchField.setEnabled(false);
-        
+
         searchField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
-            public void insertUpdate(DocumentEvent e) {
-                filtrarTabla();
-            }
-
+            public void insertUpdate(DocumentEvent e) { filtrar(); }
             @Override
-            public void removeUpdate(DocumentEvent e) {
-                filtrarTabla();
-            }
-
+            public void removeUpdate(DocumentEvent e) { filtrar(); }
             @Override
-            public void changedUpdate(DocumentEvent e) {
-                filtrarTabla();
-            }
-            
-            private void filtrarTabla() {
-                String text = searchField.getText();
-                if(text.equals("Buscar...") || text.isEmpty()) {
-                    loadAll(aux, null);
+            public void changedUpdate(DocumentEvent e) { filtrar(); }
+
+            private void filtrar() {
+                String text = searchField.getText().trim();
+                if (text.isEmpty() || text.equals("Buscar...")) {
+                    sorter.setRowFilter(null);
                 } else {
-                    loadAll(aux, text);
+                    sorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));
                 }
             }
         });
 
         searchField.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseEntered(MouseEvent arg0) {
+            public void mouseEntered(MouseEvent e) {
                 if (searchField.getText().equals("Buscar...")) {
-                    searchField.setEnabled(true);
                     searchField.setText("");
-                    modificarBtn.setEnabled(false);
-                    consultarBtn.setEnabled(false);
+                    searchField.setEnabled(true);
                     lesionSeleccionada = null;
+                    actualizarBotones();
                 }
             }
-            
+
             @Override
             public void mouseExited(MouseEvent e) {
-                if (searchField.getText().equals("")) {
-                    searchField.setEnabled(false);
+                if (searchField.getText().isEmpty()) {
                     searchField.setText("Buscar...");
+                    searchField.setEnabled(false);
                 }
             }
         });
-        
-        searchPanel.add(new JLabel("Barra de b鷖queda:   "), BorderLayout.WEST);
+
+        searchPanel.add(new JLabel("Buscar: "), BorderLayout.WEST);
         searchPanel.add(searchField, BorderLayout.CENTER);
-        
-        String[] columnNames = {"ID Lesi髇", "ID Jugador", "Tipo Lesi髇", "Fecha Lesi髇", "Fecha Recuperaci髇", "Estado"};
-        model = new DefaultTableModel() {
+        mainPanel.add(searchPanel, BorderLayout.NORTH);
+
+        // === Tabla ===
+        String[] columnas = {"ID Lesi贸n", "Jugador", "Tipo", "Fecha Lesi贸n", "Recuperaci贸n", "Estado"};
+        model = new DefaultTableModel(columnas, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
-        model.setColumnIdentifiers(columnNames);
-        
+
         table = new JTable(model);
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        table.setRowHeight(25);
+        sorter = new TableRowSorter<>(model);
+        table.setRowSorter(sorter);
+
+        scrollPane = new JScrollPane(table);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+        // === Selecci贸n de fila ===
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                int index = table.getSelectedRow();
-                if(index != -1) {
-                    String lesionId = table.getValueAt(index, 0).toString();
-                    lesionSeleccionada = SerieNacional.getInstance().searchLesionById(lesionId, SerieNacional.getInstance().getMisJugadores());
-                    modificarBtn.setEnabled(true);
-                    consultarBtn.setEnabled(true);
+                int row = table.getSelectedRow();
+                if (row != -1) {
+                    String id = table.getValueAt(row, 0).toString();
+                    lesionSeleccionada = DatabaseManager.obtenerLesionPorId(id);
+                    actualizarBotones();
                 }
             }
         });
-        
-        scrollPane = new JScrollPane(table);
 
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
-         
-        JLabel label = new JLabel("");
-        buttonPanel.add(label);
+        // === Botones ===
+        buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.setBorder(new EmptyBorder(5, 0, 0, 0));
 
-        mainPanel.add(searchPanel, BorderLayout.NORTH);
-        mainPanel.add(scrollPane, BorderLayout.CENTER);
-        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
-        
-        Font boldFont = new Font("Tahoma", Font.BOLD, 13);
-        
+        Font btnFont = new Font("Tahoma", Font.BOLD, 13);
+
         registrarBtn = new JButton("Registrar");
-        registrarBtn.setFont(boldFont);
-        registrarBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            	modificarBtn.setEnabled(false);
-            	consultarBtn.setEnabled(false);
+        registrarBtn.setFont(btnFont);
+        registrarBtn.addActionListener(e -> {
+            if (jugadorFiltro != null) {
                 lesionSeleccionada = null;
-                if (aux != null)
-                {   
-                	RegLesion regLesion = new RegLesion(aux, null);
-		            regLesion.setVisible(true);
-		            regLesion.setModal(true); 
-                }
+                actualizarBotones();
+                RegLesion reg = new RegLesion(jugadorFiltro, null);
+                reg.setVisible(true);
+                reg.setModal(true);
+                loadAll();
             }
         });
-        
-        if (aux == null)
-        	registrarBtn.setVisible(false);
-        else
-        	registrarBtn.setVisible(true);
-        
-        modificarBtn = new JButton("Modificar");
-        modificarBtn.setEnabled(false);
-        modificarBtn.setFont(boldFont);
-        modificarBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if(lesionSeleccionada != null) {
-                    RegLesion regLesion = new RegLesion(lesionSeleccionada.getJugador(), lesionSeleccionada);
-                    regLesion.setVisible(true);
-                    regLesion.setModal(true);
-                    modificarBtn.setEnabled(false);
-                	consultarBtn.setEnabled(false);
-                    lesionSeleccionada = null;
-                    String text = searchField.getText();
-                    if(text.equals("Buscar...") || text.isEmpty()) {
-                        loadAll(aux, null);
-                    } else {
-                        loadAll(aux, text);
-                    }
-                }
-            }
-        });
-        
-        consultarBtn = new JButton("Consultar");
-        consultarBtn.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		if(lesionSeleccionada != null) {
-                    ConsultaLesion consultaLesion = new ConsultaLesion(lesionSeleccionada.getJugador(), lesionSeleccionada);
-                    consultaLesion.setVisible(true);
-                    consultaLesion.setModal(true);
-                    modificarBtn.setEnabled(false);
-                	consultarBtn.setEnabled(false);
-                    lesionSeleccionada = null;
-                    String text = searchField.getText();
-                    if(text.equals("Buscar...") || text.isEmpty()) {
-                        loadAll(aux, null);
-                    } else {
-                        loadAll(aux, text);
-                    }
-                }
-        	}
-        });
-        consultarBtn.setFont(boldFont);
-        consultarBtn.setEnabled(false);
-        buttonPanel.add(consultarBtn);
-        buttonPanel.add(modificarBtn);
         buttonPanel.add(registrarBtn);
-        
+
+        modificarBtn = new JButton("Modificar");
+        modificarBtn.setFont(btnFont);
+        modificarBtn.setEnabled(false);
+        modificarBtn.addActionListener(e -> {
+            if (lesionSeleccionada != null) {
+                RegLesion reg = new RegLesion(lesionSeleccionada.getJugador(), lesionSeleccionada);
+                reg.setVisible(true);
+                reg.setModal(true);
+                lesionSeleccionada = null;
+                actualizarBotones();
+                loadAll();
+            }
+        });
+        buttonPanel.add(modificarBtn);
+
+        consultarBtn = new JButton("Consultar");
+        consultarBtn.setFont(btnFont);
+        consultarBtn.setEnabled(false);
+        consultarBtn.addActionListener(e -> {
+            if (lesionSeleccionada != null) {
+                ConsultaLesion cons = new ConsultaLesion(lesionSeleccionada.getJugador(), lesionSeleccionada);
+                cons.setVisible(true);
+                cons.setModal(true);
+            }
+        });
+        buttonPanel.add(consultarBtn);
+
         volverBtn = new JButton("Volver");
-        volverBtn.setFont(boldFont);
-        volverBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dispose();  
-            }
-        });
+        volverBtn.setFont(btnFont);
+        volverBtn.addActionListener(e -> dispose());
         buttonPanel.add(volverBtn);
-        getContentPane().add(mainPanel);
-        
-        loadAll(aux, null);
-        User miUser = SerieNacional.getLoginUser();
-        if (miUser != null)
-        {
-            if(!miUser.getTipo().equals("Administrador"))
-            {
-            	modificarBtn.setVisible(false);
-            	registrarBtn.setVisible(false);
-            }
-       }
-    }
 
-    public static void loadAll(Jugador aux, String filtro) {
-    	if (model == null) {
-    		String[] columnNames = {"ID Lesi髇", "ID Jugador", "Tipo Lesi髇", "Fecha Lesi髇", "Fecha Recuperaci髇", "Estado"};
-            model = new DefaultTableModel() {
-                @Override
-                public boolean isCellEditable(int row, int column) {
-                    return false;
-                }
-            };
-            model.setColumnIdentifiers(columnNames);
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        // === Cargar datos ===
+        loadAll();
+
+        // === Control de permisos ===
+        User user = SerieNacional.getLoginUser();
+        if (user != null && !user.getTipo().equals("Administrador")) {
+            modificarBtn.setVisible(false);
+            registrarBtn.setVisible(false);
         }
-    	
-    	model.setRowCount(0);
-        row = new Object[model.getColumnCount()];
-        if (aux != null)
-        {        
-	        for(Lesion lesion : aux.getMisLesiones()) {
-	            if(filtro == null) {
-	                row[0] = lesion.getId();
-	                row[1] = (lesion.getJugador() != null ? lesion.getJugador().getId() : "null");
-	                row[2] = lesion.getTipoDeLesion();
-	                row[3] = lesion.getFechaLes().toString();
-	                row[4] = lesion.getFechaRecPrevista().toString();
-	                row[5] = lesion.isEstado() ? "Activa" : "Recuperado";
-	                model.addRow(row);
-	            } else {
-	                if(lesion.getId().toLowerCase().contains(filtro.toLowerCase()) ||
-	                   (lesion.getJugador() != null && lesion.getJugador().getId().toLowerCase().contains(filtro.toLowerCase())) ||
-	                   lesion.getTipoDeLesion().toLowerCase().contains(filtro.toLowerCase()) ||
-	                   lesion.getFechaLes().toString().contains(filtro) ||
-	                   lesion.getFechaRecPrevista().toString().contains(filtro)) {
-	                    
-	                    row[0] = lesion.getId();
-	                    row[1] = (lesion.getJugador() != null ? lesion.getJugador().getId() : "null");
-	                    row[2] = lesion.getTipoDeLesion();
-	                    row[3] = lesion.getFechaLes().toString();
-	                    row[4] = lesion.getFechaRecPrevista().toString();
-	                    row[5] = lesion.isEstado() ? "Activa" : "Recuperado";
-	                    model.addRow(row);
-	                }
-	            }
-	        }
-        }
-        else
-        {
-	        for (Jugador jugador: SerieNacional.getInstance().getMisJugadores())
-	        {
-        		for(Lesion lesion : jugador.getMisLesiones()) {
-		            if(filtro == null) {
-		                row[0] = lesion.getId();
-		                row[1] = (lesion.getJugador() != null ? lesion.getJugador().getId() : "null");
-		                row[2] = lesion.getTipoDeLesion();
-		                row[3] = lesion.getFechaLes().toString();
-		                row[4] = lesion.getFechaRecPrevista().toString();
-		                row[5] = lesion.isEstado() ? "Activa" : "Recuperado";
-		                model.addRow(row);
-		            } else {
-		                if(lesion.getId().toLowerCase().contains(filtro.toLowerCase()) ||
-		                   (lesion.getJugador() != null && lesion.getJugador().getId().toLowerCase().contains(filtro.toLowerCase())) ||
-		                   lesion.getTipoDeLesion().toLowerCase().contains(filtro.toLowerCase()) ||
-		                   lesion.getFechaLes().toString().contains(filtro) ||
-		                   lesion.getFechaRecPrevista().toString().contains(filtro)) {
-		                    
-		                    row[0] = lesion.getId();
-		                    row[1] = (lesion.getJugador() != null ? lesion.getJugador().getId() : "null");
-		                    row[2] = lesion.getTipoDeLesion();
-		                    row[3] = lesion.getFechaLes().toString();
-		                    row[4] = lesion.getFechaRecPrevista().toString();
-		                    row[5] = lesion.isEstado() ? "Activa" : "Recuperado";
-		                    model.addRow(row);
-		                }
-		            }
-		        }
-	        }
+
+        // === Visibilidad del bot贸n Registrar ===
+        if (jugadorFiltro == null) {
+            registrarBtn.setVisible(false);
         }
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new ListadoLesiones(null).setVisible(true);
-        });
+    /**
+     * Carga todas las lesiones desde la base de datos
+     */
+    public void loadAll() {
+        model.setRowCount(0);
+        Object[] row = new Object[6];
+
+        ArrayList<Lesion> lesiones;
+        if (jugadorFiltro != null) {
+            lesiones = DatabaseManager.listarLesionesPorJugador(jugadorFiltro.getId());
+        } else {
+            lesiones = DatabaseManager.listarTodasLesiones();
+        }
+
+        for (Lesion l : lesiones) {
+            row[0] = l.getId();
+            row[1] = l.getJugador().getNombre() + " " + l.getJugador().getApellido();
+            row[2] = l.getTipoDeLesion();
+            row[3] = l.getFechaLes().format(formatter);
+            row[4] = l.getFechaRecPrevista().format(formatter);
+            row[5] = l.isEstado() ? "Activa" : "Recuperado";
+            model.addRow(row);
+        }
+    }
+
+    /**
+     * Actualiza el estado de los botones seg煤n la selecci贸n
+     */
+    private void actualizarBotones() {
+        boolean seleccionada = lesionSeleccionada != null;
+        modificarBtn.setEnabled(seleccionada);
+        consultarBtn.setEnabled(seleccionada);
     }
 }

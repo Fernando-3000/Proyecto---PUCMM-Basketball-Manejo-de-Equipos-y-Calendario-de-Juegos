@@ -370,8 +370,7 @@ public class RegJugador extends JDialog {
 							aux.setAlturaCm(Float.parseFloat(spnAltura.getValue().toString()));
 							aux.setNumero(Integer.parseInt(spnNumero.getValue().toString()));
 							
-							aux.setEquipo(SerieNacional.getInstance().searchEquipoById(txtIdEquipo.getText(), 
-																					   SerieNacional.getInstance().getMisEquipos()));
+							aux.setEquipo(SerieNacional.getInstance().searchEquipoById(txtIdEquipo.getText()));
 							SerieNacional.getInstance().modificarJugador(aux);
 							OperacionExitosa operacion = new OperacionExitosa();
 						    operacion.setVisible(true);

@@ -73,4 +73,14 @@ public class Juego implements Serializable{
 	        this.marcadorAway = aux.getMarcadorAway();
 	        this.ganador = aux.getGanador();
 	    }
+
+		public String getNombre() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		public String getApellido() {
+			// TODO Auto-generated method stub
+			return null;
+		}
 	}

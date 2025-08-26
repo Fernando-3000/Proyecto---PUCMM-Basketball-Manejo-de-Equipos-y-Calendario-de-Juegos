@@ -1,26 +1,29 @@
 package visual;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
 import logico.EstJugador;
 import logico.Jugador;
-
-import java.awt.Color;
-import java.awt.Font;
+import javax.swing.JOptionPane;
 
 public class ConsultaEstJugador extends JDialog {
-    /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	private final JPanel contentPanel = new JPanel();
+
+    private static final long serialVersionUID = 1L;
+    private final JPanel contentPanel = new JPanel();
+
     private JTextField txtCantJuegos;
     private JTextField txtTriples;
     private JTextField txtDobles;
@@ -32,154 +35,131 @@ public class ConsultaEstJugador extends JDialog {
     private JTextField txtFaltas;
     private JTextField txtMVP;
 
-    /**
-     * Launch the application.
-     */
-    public static void main(String[] args) {
-        try {
-            ConsultaEstJugador dialog = new ConsultaEstJugador(null);
-            dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-            dialog.setVisible(true);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+    public ConsultaEstJugador(Jugador jugador) {
+        super();
 
-    /**
-     * Create the dialog.
-     */
-    public ConsultaEstJugador(Jugador aux) {
-    	setResizable(false);
-    	setModal(true);
-        setTitle("Estadistica | ");
-        setBounds(100, 100, 317, 409); 
+        if (jugador == null) {
+            JOptionPane.showMessageDialog(this,
+                "No se puede mostrar estadísticas: jugador no válido.",
+                "Error", JOptionPane.ERROR_MESSAGE);
+            dispose();
+            return;
+        }
+
+        setResizable(false);
+        setModal(true);
+        setTitle("Estadísticas | " + jugador.getNombre() + " " + jugador.getApellido());
+        setBounds(100, 100, 380, 480);
         setLocationRelativeTo(null);
         getContentPane().setLayout(new BorderLayout());
-        contentPanel.setBackground(Color.WHITE);
-        contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
-        getContentPane().add(contentPanel, BorderLayout.CENTER);
 
+        contentPanel.setBackground(Color.WHITE);
+        contentPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
+        getContentPane().add(contentPanel, BorderLayout.CENTER);
         contentPanel.setLayout(null);
 
-        JLabel lblCantJuegos = new JLabel("Cantidad de Juegos:");
-        lblCantJuegos.setBounds(20, 20, 150, 16);
-        contentPanel.add(lblCantJuegos);
+        // === Fuente común ===
+        Font labelFont = new Font("Tahoma", Font.PLAIN, 13);
+        Font valueFont = new Font("Tahoma", Font.BOLD, 13);
 
-        txtCantJuegos = new JTextField();
-        txtCantJuegos.setEditable(false);
-        txtCantJuegos.setBounds(180, 17, 100, 22);
-        contentPanel.add(txtCantJuegos);
+        // === Cargar estadísticas ===
+        EstJugador estadisticas = jugador.getEstadisticas();
+        if (estadisticas == null) {
+            JOptionPane.showMessageDialog(this,
+                "El jugador no tiene estadísticas registradas.",
+                "Advertencia", JOptionPane.WARNING_MESSAGE);
+            estadisticas = new EstJugador();
+        }
 
-        JLabel lblTriples = new JLabel("Triples:");
-        lblTriples.setBounds(20, 50, 150, 16);
-        contentPanel.add(lblTriples);
+        // === Campos de estadísticas ===
+        addLabelAndField("Cantidad de Juegos:", 20, estadisticas.getCantJuegos());
+        addLabelAndField("Triples:", 60, estadisticas.getTriples());
+        addLabelAndField("Dobles:", 100, estadisticas.getDobles());
+        addLabelAndField("Lanzamientos Libres:", 140, estadisticas.getNormales());
+        addLabelAndField("Puntos Totales:", 180, estadisticas.getPuntosTot());
+        addLabelAndField("Robos:", 220, estadisticas.getRobos());
+        addLabelAndField("Tapones:", 260, estadisticas.getTapones());
+        addLabelAndField("Asistencias:", 300, estadisticas.intgetAsistencias());
+        addLabelAndField("Faltas:", 340, estadisticas.getFaltas());
+        addLabelAndField("Veces MVP:", 380, estadisticas.getMvp());
 
-        txtTriples = new JTextField();
-        txtTriples.setEditable(false);
-        txtTriples.setBounds(180, 47, 100, 22);
-        contentPanel.add(txtTriples);
-
-        JLabel lblDobles = new JLabel("Dobles:");
-        lblDobles.setBounds(20, 80, 150, 16);
-        contentPanel.add(lblDobles);
-
-        txtDobles = new JTextField();
-        txtDobles.setEditable(false);
-        txtDobles.setBounds(180, 77, 100, 22);
-        contentPanel.add(txtDobles);
-
-        JLabel lblNormales = new JLabel("Normales:");
-        lblNormales.setBounds(20, 110, 150, 16);
-        contentPanel.add(lblNormales);
-
-        txtNormales = new JTextField();
-        txtNormales.setEditable(false);
-        txtNormales.setBounds(180, 107, 100, 22);
-        contentPanel.add(txtNormales);
-
-        JLabel lblPuntosTot = new JLabel("Puntos Totales:");
-        lblPuntosTot.setBounds(20, 140, 150, 16);
-        contentPanel.add(lblPuntosTot);
-
-        txtPuntosTot = new JTextField();
-        txtPuntosTot.setEditable(false);
-        txtPuntosTot.setBounds(180, 137, 100, 22);
-        contentPanel.add(txtPuntosTot);
-
-        JLabel lblRobos = new JLabel("Robos:");
-        lblRobos.setBounds(20, 170, 150, 16);
-        contentPanel.add(lblRobos);
-
-        txtRobos = new JTextField();
-        txtRobos.setEditable(false);
-        txtRobos.setBounds(180, 167, 100, 22);
-        contentPanel.add(txtRobos);
-
-        JLabel lblTapones = new JLabel("Tapones:");
-        lblTapones.setBounds(20, 200, 150, 16);
-        contentPanel.add(lblTapones);
-
-        txtTapones = new JTextField();
-        txtTapones.setEditable(false);
-        txtTapones.setBounds(180, 197, 100, 22);
-        contentPanel.add(txtTapones);
-
-        JLabel lblAsistencias = new JLabel("Asistencias:");
-        lblAsistencias.setBounds(20, 230, 150, 16);
-        contentPanel.add(lblAsistencias);
-
-        txtAsistencias = new JTextField();
-        txtAsistencias.setEditable(false);
-        txtAsistencias.setBounds(180, 227, 100, 22);
-        contentPanel.add(txtAsistencias);
-
-        JLabel lblFaltas = new JLabel("Faltas:");
-        lblFaltas.setBounds(20, 260, 150, 16);
-        contentPanel.add(lblFaltas);
-
-        txtFaltas = new JTextField();
-        txtFaltas.setEditable(false);
-        txtFaltas.setBounds(180, 257, 100, 22);
-        contentPanel.add(txtFaltas);
-
-        JLabel lblMVP = new JLabel("Veces MVP:");
-        lblMVP.setBounds(20, 290, 150, 16);
-        contentPanel.add(lblMVP);
-
-        txtMVP = new JTextField();
-        txtMVP.setEditable(false);
-        txtMVP.setBounds(180, 287, 100, 22);
-        contentPanel.add(txtMVP);
-
+        // === Botón Cerrar ===
         JPanel buttonPane = new JPanel();
         buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
         getContentPane().add(buttonPane, BorderLayout.SOUTH);
 
-        JButton cancelButton = new JButton("Volver");
-        cancelButton.setFont(new Font("Tahoma", Font.BOLD, 13));
-        cancelButton.addActionListener(e -> dispose());
-        buttonPane.add(cancelButton);
-        
-        loadEstadistica(aux);
+        JButton btnCerrar = new JButton("Cerrar");
+        btnCerrar.setFont(new Font("Tahoma", Font.BOLD, 13));
+        btnCerrar.addActionListener(e -> dispose());
+        buttonPane.add(btnCerrar);
+
+        // Cargar datos
+        loadEstadistica(jugador);
     }
-    
-    public void loadEstadistica(Jugador jug) {
-        if (jug == null || jug.getEstadisticas() == null)
+
+    private void addLabelAndField(String labelText, int y, int value) {
+        JLabel label = new JLabel(labelText);
+        label.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        label.setBounds(20, y, 160, 16);
+        contentPanel.add(label);
+
+        JTextField textField = new JTextField(String.valueOf(value));
+        textField.setEditable(false);
+        textField.setHorizontalAlignment(SwingConstants.CENTER);
+        textField.setFont(new Font("Tahoma", Font.BOLD, 13));
+        textField.setBounds(190, y - 3, 120, 25);
+        contentPanel.add(textField);
+
+        // Asociar campo para actualizarlo después
+        switch (labelText) {
+            case "Cantidad de Juegos:":
+                txtCantJuegos = textField;
+                break;
+            case "Triples:":
+                txtTriples = textField;
+                break;
+            case "Dobles:":
+                txtDobles = textField;
+                break;
+            case "Lanzamientos Libres:":
+                txtNormales = textField;
+                break;
+            case "Puntos Totales:":
+                txtPuntosTot = textField;
+                break;
+            case "Robos:":
+                txtRobos = textField;
+                break;
+            case "Tapones:":
+                txtTapones = textField;
+                break;
+            case "Asistencias:":
+                txtAsistencias = textField;
+                break;
+            case "Faltas:":
+                txtFaltas = textField;
+                break;
+            case "Veces MVP:":
+                txtMVP = textField;
+                break;
+        }
+    }
+
+    public void loadEstadistica(Jugador jugador) {
+        if (jugador == null || jugador.getEstadisticas() == null) {
             return;
-        
-        EstJugador estadisticas = jug.getEstadisticas();
-        
-        setTitle("Estad�stica | " + jug.getNombre() + " " + jug.getApellido());
-        
-        txtCantJuegos.setText(Integer.toString(estadisticas.getCantJuegos()));
-        txtTriples.setText(Integer.toString(estadisticas.getTriples()));
-        txtDobles.setText(Integer.toString(estadisticas.getDobles()));
-        txtNormales.setText(Integer.toString(estadisticas.getNormales()));
-        txtPuntosTot.setText(Integer.toString(estadisticas.getPuntosTot()));
-        txtRobos.setText(Integer.toString(estadisticas.getRobos()));
-        txtTapones.setText(Integer.toString(estadisticas.getTapones()));
-        txtAsistencias.setText(Integer.toString(estadisticas.getAsistencias()));
-        txtFaltas.setText(Integer.toString(estadisticas.getFaltas()));
-        txtMVP.setText(Integer.toString(estadisticas.getMvp()));
+        }
+
+        EstJugador est = jugador.getEstadisticas();
+        txtCantJuegos.setText(String.valueOf(est.getCantJuegos()));
+        txtTriples.setText(String.valueOf(est.getTriples()));
+        txtDobles.setText(String.valueOf(est.getDobles()));
+        txtNormales.setText(String.valueOf(est.getNormales()));
+        txtPuntosTot.setText(String.valueOf(est.getPuntosTot()));
+        txtRobos.setText(String.valueOf(est.getRobos()));
+        txtTapones.setText(String.valueOf(est.getTapones()));
+        txtAsistencias.setText(String.valueOf(est.intgetAsistencias()));
+        txtFaltas.setText(String.valueOf(est.getFaltas()));
+        txtMVP.setText(String.valueOf(est.getMvp()));
     }
 }

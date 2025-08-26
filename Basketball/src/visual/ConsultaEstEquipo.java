@@ -1,26 +1,29 @@
 package visual;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
 import logico.Equipo;
 import logico.EstEquipo;
-
-import java.awt.Color;
-import java.awt.Font;
+import javax.swing.JOptionPane;
 
 public class ConsultaEstEquipo extends JDialog {
-    /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	private final JPanel contentPanel = new JPanel();
+
+    private static final long serialVersionUID = 1L;
+    private final JPanel contentPanel = new JPanel();
+
     private JTextField txtCantJuegos;
     private JTextField txtTriples;
     private JTextField txtDobles;
@@ -30,134 +33,125 @@ public class ConsultaEstEquipo extends JDialog {
     private JTextField txtJuegosPerdidos;
     private JTextField txtTorneosGanados;
 
-    /**
-     * Launch the application.
-     */
-    public static void main(String[] args) {
-        try {
-            ConsultaEstEquipo dialog = new ConsultaEstEquipo(null);
-            dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-            dialog.setVisible(true);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+    public ConsultaEstEquipo(Equipo equipo) {
+        super();
 
-    /**
-     * Create the dialog.
-     */
-    public ConsultaEstEquipo(Equipo aux) {
-    	setResizable(false);
-    	setModal(true);
-        setTitle("Estad\u00EDstica |");
-        setBounds(100, 100, 312, 351); 
+        if (equipo == null) {
+            JOptionPane.showMessageDialog(this,
+                "No se puede mostrar estadísticas: equipo no válido.",
+                "Error", JOptionPane.ERROR_MESSAGE);
+            dispose();
+            return;
+        }
+
+        setResizable(false);
+        setModal(true);
+        setTitle("Estadísticas | " + equipo.getNombre());
+        setBounds(100, 100, 380, 450);
         setLocationRelativeTo(null);
         getContentPane().setLayout(new BorderLayout());
+
         contentPanel.setBackground(Color.WHITE);
-        contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+        contentPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
         getContentPane().add(contentPanel, BorderLayout.CENTER);
+        contentPanel.setLayout(null);
 
-         contentPanel.setLayout(null);
+        // === Fuente común ===
+        Font labelFont = new Font("Tahoma", Font.PLAIN, 13);
+        Font valueFont = new Font("Tahoma", Font.BOLD, 13);
 
-         JLabel lblCantJuegos = new JLabel("Cantidad de Juegos:");
-        lblCantJuegos.setBounds(20, 20, 150, 16);
-        contentPanel.add(lblCantJuegos);
+        // === Cargar estadísticas ===
+        EstEquipo estadistica = equipo.getEstadistica();
+        if (estadistica == null) {
+            JOptionPane.showMessageDialog(this,
+                "El equipo no tiene estadísticas registradas.",
+                "Advertencia", JOptionPane.WARNING_MESSAGE);
+            estadistica = new EstEquipo();
+        }
 
-        txtCantJuegos = new JTextField();
-        txtCantJuegos.setEditable(false);
-        txtCantJuegos.setBounds(180, 17, 100, 22);
-        contentPanel.add(txtCantJuegos);
+        // === Campos de estadísticas ===
+        addLabelAndField("Cantidad de Juegos:", 20, estadistica.getCantJuegos());
+        addLabelAndField("Triples:", 60, estadistica.getTriples());
+        addLabelAndField("Dobles:", 100, estadistica.getDobles());
+        addLabelAndField("Lanzamientos Libres:", 140, estadistica.getNormales());
+        addLabelAndField("Puntos Totales:", 180, estadistica.getPuntosTot());
+        addLabelAndField("Juegos Ganados:", 220, estadistica.getJuegosGanados());
+        addLabelAndField("Juegos Perdidos:", 260, estadistica.getJuegosPerdidos());
+        addLabelAndField("Torneos Ganados:", 300, estadistica.getTorneosGanados());
 
-         JLabel lblTriples = new JLabel("Triples:");
-        lblTriples.setBounds(20, 50, 150, 16);
-        contentPanel.add(lblTriples);
-
-        txtTriples = new JTextField();
-        txtTriples.setEditable(false);
-        txtTriples.setBounds(180, 47, 100, 22);
-        contentPanel.add(txtTriples);
-
-         JLabel lblDobles = new JLabel("Dobles:");
-        lblDobles.setBounds(20, 80, 150, 16);
-        contentPanel.add(lblDobles);
-
-        txtDobles = new JTextField();
-        txtDobles.setEditable(false);
-        txtDobles.setBounds(180, 77, 100, 22);
-        contentPanel.add(txtDobles);
-
-         JLabel lblNormales = new JLabel("Normales:");
-        lblNormales.setBounds(20, 110, 150, 16);
-        contentPanel.add(lblNormales);
-
-        txtNormales = new JTextField();
-        txtNormales.setEditable(false);
-        txtNormales.setBounds(180, 107, 100, 22);
-        contentPanel.add(txtNormales);
-
-         JLabel lblPuntosTot = new JLabel("Puntos Totales:");
-        lblPuntosTot.setBounds(20, 140, 150, 16);
-        contentPanel.add(lblPuntosTot);
-
-        txtPuntosTot = new JTextField();
-        txtPuntosTot.setEditable(false);
-        txtPuntosTot.setBounds(180, 137, 100, 22);
-        contentPanel.add(txtPuntosTot);
-
-         JLabel lblJuegosGanados = new JLabel("Juegos Ganados:");
-        lblJuegosGanados.setBounds(20, 170, 150, 16);
-        contentPanel.add(lblJuegosGanados);
-
-        txtJuegosGanados = new JTextField();
-        txtJuegosGanados.setEditable(false);
-        txtJuegosGanados.setBounds(180, 167, 100, 22);
-        contentPanel.add(txtJuegosGanados);
-
-         JLabel lblJuegosPerdidos = new JLabel("Juegos Perdidos:");
-        lblJuegosPerdidos.setBounds(20, 200, 150, 16);
-        contentPanel.add(lblJuegosPerdidos);
-
-        txtJuegosPerdidos = new JTextField();
-        txtJuegosPerdidos.setEditable(false);
-        txtJuegosPerdidos.setBounds(180, 197, 100, 22);
-        contentPanel.add(txtJuegosPerdidos);
-
-         JLabel lblTorneosGanados = new JLabel("Torneos Ganados:");
-        lblTorneosGanados.setBounds(20, 230, 150, 16);
-        contentPanel.add(lblTorneosGanados);
-
-        txtTorneosGanados = new JTextField();
-        txtTorneosGanados.setEditable(false);
-        txtTorneosGanados.setBounds(180, 227, 100, 22);
-        contentPanel.add(txtTorneosGanados);
-
-         JPanel buttonPane = new JPanel();
+        // === Botón Cerrar ===
+        JPanel buttonPane = new JPanel();
         buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
         getContentPane().add(buttonPane, BorderLayout.SOUTH);
 
-         JButton cancelButton = new JButton("Volver");
-         cancelButton.setFont(new Font("Tahoma", Font.BOLD, 13));
-        cancelButton.addActionListener(e -> dispose());
-        buttonPane.add(cancelButton);
-        
-        loadEstadistica(aux);
+        JButton btnCerrar = new JButton("Cerrar");
+        btnCerrar.setFont(new Font("Tahoma", Font.BOLD, 13));
+        btnCerrar.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+            }
+        });
+        buttonPane.add(btnCerrar);
+
+        // Cargar datos
+        loadEstadistica(equipo);
     }
-    
-    public void loadEstadistica(Equipo aux) {
-        if (aux == null || aux.getEstadistica() == null)
+
+    private void addLabelAndField(String labelText, int y, int value) {
+        JLabel label = new JLabel(labelText);
+        label.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        label.setBounds(20, y, 160, 16);
+        contentPanel.add(label);
+
+        JTextField textField = new JTextField(String.valueOf(value));
+        textField.setEditable(false);
+        textField.setHorizontalAlignment(SwingConstants.CENTER);
+        textField.setFont(new Font("Tahoma", Font.BOLD, 13));
+        textField.setBounds(190, y - 3, 120, 25);
+        contentPanel.add(textField);
+
+        // Asociar campo para actualizarlo después
+        switch (labelText) {
+            case "Cantidad de Juegos:":
+                txtCantJuegos = textField;
+                break;
+            case "Triples:":
+                txtTriples = textField;
+                break;
+            case "Dobles:":
+                txtDobles = textField;
+                break;
+            case "Lanzamientos Libres:":
+                txtNormales = textField;
+                break;
+            case "Puntos Totales:":
+                txtPuntosTot = textField;
+                break;
+            case "Juegos Ganados:":
+                txtJuegosGanados = textField;
+                break;
+            case "Juegos Perdidos:":
+                txtJuegosPerdidos = textField;
+                break;
+            case "Torneos Ganados:":
+                txtTorneosGanados = textField;
+                break;
+        }
+    }
+
+    public void loadEstadistica(Equipo equipo) {
+        if (equipo == null || equipo.getEstadistica() == null) {
             return;
-        
-        EstEquipo estadistica = aux.getEstadistica();
-        
-        setTitle("Estadística | " + aux.getNombre());
-   
-        txtCantJuegos.setText(Integer.toString(estadistica.getCantJuegos()));
-        txtTriples.setText(Integer.toString(estadistica.getTriples()));
-        txtDobles.setText(Integer.toString(estadistica.getDobles()));
-        txtNormales.setText(Integer.toString(estadistica.getNormales()));
-        txtPuntosTot.setText(Integer.toString(estadistica.getPuntosTot()));
-        txtJuegosGanados.setText(Integer.toString(estadistica.getJuegosGanados()));
-        txtJuegosPerdidos.setText(Integer.toString(estadistica.getJuegosPerdidos()));
-        txtTorneosGanados.setText(Integer.toString(estadistica.getTorneosGanados()));
+        }
+
+        EstEquipo estadistica = equipo.getEstadistica();
+        txtCantJuegos.setText(String.valueOf(estadistica.getCantJuegos()));
+        txtTriples.setText(String.valueOf(estadistica.getTriples()));
+        txtDobles.setText(String.valueOf(estadistica.getDobles()));
+        txtNormales.setText(String.valueOf(estadistica.getNormales()));
+        txtPuntosTot.setText(String.valueOf(estadistica.getPuntosTot()));
+        txtJuegosGanados.setText(String.valueOf(estadistica.getJuegosGanados()));
+        txtJuegosPerdidos.setText(String.valueOf(estadistica.getJuegosPerdidos()));
+        txtTorneosGanados.setText(String.valueOf(estadistica.getTorneosGanados()));
     }
 }
