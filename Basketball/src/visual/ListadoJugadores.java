@@ -6,11 +6,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 import SQL.DatabaseManager;
@@ -109,16 +111,39 @@ public class ListadoJugadores extends JDialog {
         searchPanel.add(new JLabel("Barra de búsqueda:   "), BorderLayout.WEST);
         searchPanel.add(searchField, BorderLayout.CENTER);
         
-        String[] columnNames = {"Equipo", "ID", "Jugador", "Posición", "Número", "Estado de salud"};
+        String[] columnNames = {"Equipo", "ID", "Jugador", "Posición", "Número", "Foto Jugador"};
         model = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
+            @Override
+		    public Class<?> getColumnClass(int columnIndex) {
+		        // Si la columna es la imagen del jugador devolvera como icono imagen del jugador
+		        if (columnIndex == 5) {
+		            return ImageIcon.class;
+		        }
+		        return String.class;
+		    }
         };
         model.setColumnIdentifiers(columnNames);
         
         table = new JTable(model);
+        table.setRowHeight(40); // alto de fila
+        table.getColumnModel().getColumn(4).setPreferredWidth(5); // ancho columna numero jugador
+		table.getColumnModel().getColumn(5).setPreferredWidth(60); // ancho columna logo
+		
+		//Centrar todo el texto de las celdas
+		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+		centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+
+		for (int i = 0; i < table.getColumnCount(); i++) {
+		    // Si la columna es de imagen, usa otro renderer
+		    if (i != 5) { 
+		        table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+		    }
+		}
+        
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.addMouseListener(new MouseAdapter() {
             @Override
@@ -276,7 +301,7 @@ public class ListadoJugadores extends JDialog {
 
     public static void loadAll(Equipo aux, String filtro) {
     	if (model == null) {
-    		String[] columnNames = {"Equipo", "ID", "Jugador", "Posicion", "Numero", "Estado de salud"};
+    		String[] columnNames = {"Equipo", "ID", "Jugador", "Posicion", "Numero", "Foto Jugador"};
             model = new DefaultTableModel() {
                 @Override
                 public boolean isCellEditable(int row, int column) {
@@ -306,7 +331,12 @@ public class ListadoJugadores extends JDialog {
                 row[2] = jugador.getNombre() + " " + jugador.getApellido();
                 row[3] = jugador.getPosicion();
                 row[4] = jugador.getNumero();
-                row[5] = jugador.getNombre() + " " + jugador.getApellido();//jugador.getEstadoSalud() ? "Activo" : "Lesionado";
+                BufferedImage logo = jugador.getFotoBuffered();
+		        if (logo != null) {
+		            row[5] = new ImageIcon(logo.getScaledInstance(60, 40, java.awt.Image.SCALE_SMOOTH));
+		        } else {
+		            row[5] = null; // Icono por defecto 
+		        }
                 model.addRow(row);
             } else {
                 if(jugador.getId().toLowerCase().contains(filtro.toLowerCase()) ||

@@ -125,7 +125,7 @@ public class ConsultaJuego extends JDialog {
         txtGanador.setBounds(180, 197, 170, 25);
         contentPanel.add(txtGanador);
 
-        // === Botón Cerrar ===
+        // === Botï¿½n Cerrar ===
         JPanel buttonPane = new JPanel();
         buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
         getContentPane().add(buttonPane, BorderLayout.SOUTH);
@@ -145,7 +145,7 @@ public class ConsultaJuego extends JDialog {
     public void loadJuego(Juego juego) {
         if (juego == null) return;
 
-        txtId.setText(juego.getId());
+        txtId.setText("JG-" + juego.getId());
         txtEquipoCasa.setText(juego.getHome().getNombre());
         txtEquipoVisita.setText(juego.getAway().getNombre());
         txtMarcadorCasa.setText(String.valueOf(juego.getMarcadorCasa()));

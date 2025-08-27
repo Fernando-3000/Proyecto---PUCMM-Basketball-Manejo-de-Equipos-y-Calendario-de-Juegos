@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 public class Juego implements Serializable{
-	    private String id;
+	    private int id;
 	    private Equipo home;
 	    private Equipo away;
 	    private int marcadorCasa;
@@ -13,7 +13,7 @@ public class Juego implements Serializable{
 	    private static final long serialVersionUID = 1L;
 	    
 
-	    public Juego(String id, Equipo home, Equipo away) {
+	    public Juego(int id, Equipo home, Equipo away) {
 	        this.id = id;
 	        this.home = home;
 	        this.away = away;
@@ -22,7 +22,7 @@ public class Juego implements Serializable{
 	        this.ganador = null;
 	    }
 
-	    public String getId() {
+	    public int getId() {
 	        return id;
 	    }
 

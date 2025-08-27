@@ -1,165 +1,204 @@
 package visual;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
 
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
+import javax.swing.ImageIcon;
 
 import SQL.DatabaseManager;
 import logico.Equipo;
 import logico.Jugador;
 
 public class ConsultaJugador extends JDialog {
-
-    private static final long serialVersionUID = 1L;
-
+    private final JPanel contentPanel = new JPanel();
     private JTextField txtId;
     private JTextField txtNombre;
+    private JTextField txtApellido;
     private JTextField txtPosicion;
+    private JTextField txtPeso;
+    private JTextField txtAltura;
     private JTextField txtNumero;
     private JTextField txtEquipo;
+    private JPanel panelFoto;
 
     /**
-     * Constructor: recibe el ID del jugador y muestra sus datos
+     * Constructor: recibe el ID del jugador y consulta la BD
      */
     public ConsultaJugador(String idJugador) {
-        super();
-
-        if (idJugador == null || idJugador.trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                "ID de jugador no válido.",
-                "Error", JOptionPane.ERROR_MESSAGE);
-            dispose();
-            return;
-        }
-
         setModal(true);
-        setTitle("Consulta de Jugador");
+        setTitle("Consultar Jugador");
+        setBounds(100, 100, 500, 480);
         setResizable(false);
-        setBounds(100, 100, 500, 380);
-        setLocationRelativeTo(null);
         getContentPane().setLayout(new BorderLayout());
+        contentPanel.setBackground(Color.WHITE);
+        contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+        getContentPane().add(contentPanel, BorderLayout.CENTER);
+        setLocationRelativeTo(null);
+        contentPanel.setLayout(null);
 
-        // === Panel principal ===
-        JPanel panel = new JPanel();
-        panel.setLayout(null);
-        panel.setBackground(Color.WHITE);
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        getContentPane().add(panel, BorderLayout.CENTER);
-
-        int xLabel = 30, xField = 150, y = 30, dy = 40, fieldWidth = 220;
-
-        // === Fuente común ===
-        Font labelFont = new Font("Tahoma", Font.PLAIN, 13);
-        Font valueFont = new Font("Tahoma", Font.BOLD, 13);
-
-        // --- ID ---
+        // --- Labels y campos ---
         JLabel lblId = new JLabel("ID:");
-        lblId.setFont(labelFont);
-        lblId.setBounds(xLabel, y, 100, 25);
-        panel.add(lblId);
+        lblId.setBounds(30, 20, 30, 16);
+        contentPanel.add(lblId);
 
         txtId = new JTextField();
-        txtId.setFont(valueFont);
-        txtId.setBounds(xField, y, fieldWidth, 28);
+        txtId.setBounds(80, 18, 380, 22);
         txtId.setEditable(false);
-        panel.add(txtId);
-        y += dy;
+        contentPanel.add(txtId);
 
-        // --- Nombre ---
         JLabel lblNombre = new JLabel("Nombre:");
-        lblNombre.setFont(labelFont);
-        lblNombre.setBounds(xLabel, y, 100, 25);
-        panel.add(lblNombre);
+        lblNombre.setBounds(20, 55, 60, 16);
+        contentPanel.add(lblNombre);
 
         txtNombre = new JTextField();
-        txtNombre.setFont(valueFont);
-        txtNombre.setBounds(xField, y, fieldWidth, 28);
+        txtNombre.setBounds(80, 52, 150, 22);
         txtNombre.setEditable(false);
-        panel.add(txtNombre);
-        y += dy;
+        contentPanel.add(txtNombre);
 
-        // --- Posición ---
-        JLabel lblPosicion = new JLabel("Posición:");
-        lblPosicion.setFont(labelFont);
-        lblPosicion.setBounds(xLabel, y, 100, 25);
-        panel.add(lblPosicion);
+        JLabel lblApellido = new JLabel("Apellido:");
+        lblApellido.setBounds(250, 55, 60, 16);
+        contentPanel.add(lblApellido);
+
+        txtApellido = new JTextField();
+        txtApellido.setBounds(310, 52, 150, 22);
+        txtApellido.setEditable(false);
+        contentPanel.add(txtApellido);
+
+        JLabel lblPosicion = new JLabel("PosiciÃ³n:");
+        lblPosicion.setBounds(20, 90, 60, 16);
+        contentPanel.add(lblPosicion);
 
         txtPosicion = new JTextField();
-        txtPosicion.setFont(valueFont);
-        txtPosicion.setBounds(xField, y, fieldWidth, 28);
+        txtPosicion.setBounds(80, 87, 380, 22);
         txtPosicion.setEditable(false);
-        panel.add(txtPosicion);
-        y += dy;
+        contentPanel.add(txtPosicion);
 
-        // --- Número ---
-        JLabel lblNumero = new JLabel("Número:");
-        lblNumero.setFont(labelFont);
-        lblNumero.setBounds(xLabel, y, 100, 25);
-        panel.add(lblNumero);
+        JLabel lblPeso = new JLabel("Peso (kg):");
+        lblPeso.setBounds(20, 125, 70, 16);
+        contentPanel.add(lblPeso);
+
+        txtPeso = new JTextField();
+        txtPeso.setBounds(90, 122, 80, 22);
+        txtPeso.setEditable(false);
+        contentPanel.add(txtPeso);
+
+        JLabel lblAltura = new JLabel("Altura (cm):");
+        lblAltura.setBounds(190, 125, 80, 16);
+        contentPanel.add(lblAltura);
+
+        txtAltura = new JTextField();
+        txtAltura.setBounds(270, 122, 80, 22);
+        txtAltura.setEditable(false);
+        contentPanel.add(txtAltura);
+
+        JLabel lblNumero = new JLabel("NÃºmero:");
+        lblNumero.setBounds(370, 125, 60, 16);
+        contentPanel.add(lblNumero);
 
         txtNumero = new JTextField();
-        txtNumero.setFont(valueFont);
-        txtNumero.setBounds(xField, y, fieldWidth, 28);
+        txtNumero.setBounds(430, 122, 30, 22);
         txtNumero.setEditable(false);
-        panel.add(txtNumero);
-        y += dy;
+        contentPanel.add(txtNumero);
 
-        // --- Equipo ---
-        JLabel lblEquipoLabel = new JLabel("Equipo:");
-        lblEquipoLabel.setFont(labelFont);
-        lblEquipoLabel.setBounds(xLabel, y, 100, 25);
-        panel.add(lblEquipoLabel);
+        JLabel lblEquipo = new JLabel("Equipo:");
+        lblEquipo.setBounds(20, 160, 50, 16);
+        contentPanel.add(lblEquipo);
 
         txtEquipo = new JTextField();
-        txtEquipo.setFont(valueFont);
-        txtEquipo.setBounds(xField, y, fieldWidth, 28);
+        txtEquipo.setBounds(80, 157, 380, 22);
         txtEquipo.setEditable(false);
-        panel.add(txtEquipo);
+        contentPanel.add(txtEquipo);
 
-        // === Botón Cerrar ===
-        JPanel buttonPane = new JPanel();
-        buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
+        // --- Panel foto ---
+        JLabel lblFoto = new JLabel("Foto:");
+        lblFoto.setBounds(20, 190, 50, 16);
+        contentPanel.add(lblFoto);
 
-        JButton btnCerrar = new JButton("Cerrar");
-        btnCerrar.setFont(new Font("Tahoma", Font.BOLD, 13));
-        btnCerrar.addActionListener(e -> dispose());
-        buttonPane.add(btnCerrar);
+        panelFoto = new JPanel();
+        panelFoto.setBounds(20, 210, 220, 220);
+        panelFoto.setBackground(Color.WHITE);
+        panelFoto.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1, true));
+        panelFoto.setLayout(new BorderLayout());
+        JLabel imageLabel = new JLabel("Sin foto", SwingConstants.CENTER);
+        imageLabel.setFont(new Font("Tahoma", Font.ITALIC, 12));
+        panelFoto.add(imageLabel, BorderLayout.CENTER);
+        contentPanel.add(panelFoto);
 
-        getContentPane().add(buttonPane, BorderLayout.SOUTH);
+        // --- BotÃ³n volver ---
+        JButton btnVolver = new JButton("Volver");
+        btnVolver.setFont(new Font("Tahoma", Font.BOLD, 13));
+        btnVolver.setBounds(360, 380, 100, 40);
+        btnVolver.addActionListener(e -> dispose());
+        contentPanel.add(btnVolver);
 
-        // === Cargar datos desde la base de datos ===
-        cargarJugadorDesdeBD(idJugador);
+        // --- Cargar datos ---
+        if (idJugador != null && !idJugador.trim().isEmpty()) {
+            cargarDesdeBD(idJugador);
+        } else {
+            JOptionPane.showMessageDialog(this, "ID de jugador no vÃ¡lido.", "Error", JOptionPane.ERROR_MESSAGE);
+            dispose();
+        }
     }
 
-    /**
-     * Carga los datos del jugador desde la base de datos
-     */
-    private void cargarJugadorDesdeBD(String idJugador) {
+    private void cargarDesdeBD(String idJugador) {
         Jugador jugador = DatabaseManager.obtenerJugadorPorId(idJugador);
 
         if (jugador == null) {
             JOptionPane.showMessageDialog(this,
-                "No se encontró ningún jugador con ID: " + idJugador,
-                "Jugador no encontrado", JOptionPane.ERROR_MESSAGE);
+                    "No se encontrÃ³ el jugador con ID: " + idJugador,
+                    "Jugador no encontrado", JOptionPane.ERROR_MESSAGE);
             dispose();
             return;
         }
 
-        // --- Cargar datos básicos ---
         txtId.setText(jugador.getId());
-        txtNombre.setText(jugador.getNombre() + " " + jugador.getApellido());
+        txtNombre.setText(jugador.getNombre());
+        txtApellido.setText(jugador.getApellido());
         txtPosicion.setText(jugador.getPosicion());
+        txtPeso.setText(String.valueOf(jugador.getPesoKg()));
+        txtAltura.setText(String.valueOf(jugador.getAlturaCm()));
         txtNumero.setText(String.valueOf(jugador.getNumero()));
 
-        // --- Cargar equipo ---
-        String idEquipo = jugador.getID_Equipo();
-        if (idEquipo != null && !idEquipo.isEmpty()) {
-            Equipo equipo = DatabaseManager.obtenerEquipoPorId(idEquipo);
-            txtEquipo.setText(equipo != null ? equipo.getNombre() : idEquipo);
+        Equipo equipo = jugador.getEquipo();
+        txtEquipo.setText(equipo != null ? equipo.getNombre() : "Sin equipo");
+       
+        BufferedImage imagen = jugador.getFotoBuffered();
+        if (imagen != null) {
+            mostrarImagen(imagen);
         } else {
-            txtEquipo.setText("Sin equipo");
+        	panelFoto.removeAll();
+        	panelFoto.add(new JLabel("Sin imagen", SwingConstants.CENTER), BorderLayout.CENTER);
+        	panelFoto.revalidate();
+        	panelFoto.repaint();
         }
     }
+    
+    private void mostrarImagen(BufferedImage imagen) {
+		panelFoto.removeAll();
+		panelFoto.setLayout(new BorderLayout());
+		try {
+			Image scaled = imagen.getScaledInstance(panelFoto.getWidth() - 2, panelFoto.getHeight() - 2, Image.SCALE_SMOOTH);
+	        JLabel label = new JLabel(new ImageIcon(scaled));
+	        label.setHorizontalAlignment(SwingConstants.CENTER);
+	        label.setVerticalAlignment(SwingConstants.CENTER);
+	        panelFoto.add(label, BorderLayout.CENTER);
+		} catch (Exception e) {
+			JLabel label = new JLabel("Error al cargar", SwingConstants.CENTER);
+			panelFoto.add(label, BorderLayout.CENTER);
+		}
+		panelFoto.revalidate();
+		panelFoto.repaint();
+	}
 }

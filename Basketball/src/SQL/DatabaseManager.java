@@ -26,11 +26,11 @@ public class DatabaseManager {
 
     public static String tipoUserConectado = null;
 
-    // ======================= CONEXIÓN SEGURA =======================
+    // ======================= CONEXIï¿½N SEGURA =======================
     private static Connection getConnection() throws SQLException {
         Connection conn = Conexion.getConexion();
         if (conn == null || conn.isClosed()) {
-            throw new SQLException("No se pudo establecer la conexión con la base de datos.");
+            throw new SQLException("No se pudo establecer la conexiï¿½n con la base de datos.");
         }
         return conn;
     }
@@ -160,7 +160,22 @@ public class DatabaseManager {
 
     // ======================= CRUD de EQUIPO =======================
     public static String obtenerProximoIdEquipo() {
-        return obtenerProximoId("Equipo", "EQ");
+    	String proximoId = "EQ-1"; // Valor por defecto
+		String consulta = "SELECT 'EQ-' + CAST(ISNULL(IDENT_CURRENT('Equipo'), 0) + 1 AS VARCHAR) AS ProximoID";
+
+		try (Connection conn = getConnection();
+				Statement statement = conn.createStatement();
+				ResultSet resultado = statement.executeQuery(consulta)) {
+
+			if (resultado.next()) {
+				proximoId = resultado.getString("ProximoID");
+			}
+
+		} catch (SQLException exception) {
+			JOptionPane.showMessageDialog(null, exception.toString());
+		}
+
+		return proximoId;
     }
 
     public static boolean registrarEquipo(String nombre, int anio, String pais, String entrenador,
@@ -263,7 +278,22 @@ public class DatabaseManager {
 
     // ======================= CRUD de JUGADOR =======================
     public static String obtenerProximoIdJugador() {
-        return obtenerProximoId("Jugador", "PL");
+    	String proximoId = "PL-1"; // Valor por defecto
+		String consulta = "SELECT 'PL-' + CAST(ISNULL(IDENT_CURRENT('Jugador'), 0) + 1 AS VARCHAR) AS ProximoID";
+
+		try (Connection conn = getConnection();
+			Statement statement = conn.createStatement();
+			ResultSet resultado = statement.executeQuery(consulta)) {
+
+			if (resultado.next()) {
+				proximoId = resultado.getString("ProximoID");
+			}
+
+		} catch (SQLException exception) {
+			JOptionPane.showMessageDialog(null, exception.toString());
+		}
+
+		return proximoId;
     }
 
     public static boolean registrarJugador(String idEquipo, String nombre, String apellido, String posicion,
@@ -374,8 +404,8 @@ public class DatabaseManager {
     }
 
     // ======================= CRUD de JUEGO =======================
-    public static String obtenerProximoIdJuego() {
-        String consulta = "SELECT MAX(Juego_Num) FROM Juego";
+    public static int obtenerProximoIdJuego() {
+        String consulta = "SELECT MAX(ID_Juego) FROM Juego";
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(consulta)) {
@@ -383,23 +413,22 @@ public class DatabaseManager {
             if (rs.next()) {
                 int maxNum = rs.getInt(1);
                 if (rs.wasNull()) maxNum = 0;
-                return "JG-" + (maxNum + 1);
+                return (maxNum + 1);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return "JG-1";
+        return 1;
     }
 
-    public static boolean registrarJuego(String id, String idEquipoCasa, String idEquipoVisita, String ganador) {
-        String sql = "INSERT INTO Juego (ID_Juego, ID_Equipo_Casa, ID_Equipo_Visita, Ganador) VALUES (?, ?, ?, ?)";
+    public static boolean registrarJuego(String idEquipoCasa, String idEquipoVisita, String ID_Ganador) {
+        String sql = "INSERT INTO Juego (ID_Equipo_Casa, ID_Equipo_Visitante, ID_Ganador) VALUES (?, ?, ?)";
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, id);
-            ps.setString(2, idEquipoCasa);
-            ps.setString(3, idEquipoVisita);
-            ps.setString(4, ganador);
+            ps.setString(1, idEquipoCasa);
+            ps.setString(2, idEquipoVisita);
+            ps.setString(3, ID_Ganador);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -410,16 +439,16 @@ public class DatabaseManager {
 
     public static ArrayList<Juego> listarJuegos() {
         ArrayList<Juego> lista = new ArrayList<>();
-        String sql = "SELECT ID_Juego, ID_Equipo_Casa, ID_Equipo_Visita, Ganador FROM Juego ORDER BY Juego_Num";
+        String sql = "SELECT ID_Juego, ID_Equipo_Casa, ID_Equipo_Visitante, ID_Ganador FROM Juego ORDER BY ID_Juego";
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                String id = rs.getString("ID_Juego");
+                int id = rs.getInt("ID_Juego");
                 String idCasa = rs.getString("ID_Equipo_Casa");
-                String idVisita = rs.getString("ID_Equipo_Visita");
-                String ganador = rs.getString("Ganador");
+                String idVisita = rs.getString("ID_Equipo_Visitante");
+                String ganador = rs.getString("ID_Ganador");
 
                 Equipo casa = obtenerEquipoPorId(idCasa);
                 Equipo visita = obtenerEquipoPorId(idVisita);
@@ -439,17 +468,17 @@ public class DatabaseManager {
         return lista;
     }
 
-    public static Juego obtenerJuegoPorId(String idJuego) {
-        String sql = "SELECT ID_Equipo_Casa, ID_Equipo_Visita, Ganador FROM Juego WHERE ID_Juego = ?";
+    public static Juego obtenerJuegoPorId(int idJuego) {
+        String sql = "SELECT ID_Equipo_Casa, ID_Equipo_Visitante, ID_Ganador FROM Juego WHERE ID_Juego = ?";
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, idJuego);
+            ps.setInt(1, idJuego);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     String idCasa = rs.getString("ID_Equipo_Casa");
-                    String idVisita = rs.getString("ID_Equipo_Visita");
-                    String ganador = rs.getString("Ganador");
+                    String idVisita = rs.getString("ID_Equipo_Visitante");
+                    String ganador = rs.getString("ID_Ganador");
 
                     Equipo casa = obtenerEquipoPorId(idCasa);
                     Equipo visita = obtenerEquipoPorId(idVisita);
@@ -470,13 +499,13 @@ public class DatabaseManager {
         return null;
     }
 
-    public static boolean actualizarJuego(String idJuego, String ganador) {
-        String sql = "UPDATE Juego SET Ganador = ? WHERE ID_Juego = ?";
+    public static boolean actualizarJuego(int idJuego, String idGanador) {
+        String sql = "UPDATE Juego SET ID_Ganador = ? WHERE ID_Juego = ?";
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, ganador);
-            ps.setString(2, idJuego);
+            ps.setString(1, idGanador);
+            ps.setInt(2, idJuego);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -485,12 +514,12 @@ public class DatabaseManager {
         }
     }
 
-    public static boolean eliminarJuego(String idJuego) {
+    public static boolean eliminarJuego(int idJuego) {
         String sql = "DELETE FROM Juego WHERE ID_Juego = ?";
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, idJuego);
+            ps.setInt(1, idJuego);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -502,10 +531,10 @@ public class DatabaseManager {
     public static ArrayList<Juego> listarJuegosPorEquipo(String idEquipo) {
         ArrayList<Juego> lista = new ArrayList<>();
         String sql = """
-            SELECT ID_Juego, ID_Equipo_Casa, ID_Equipo_Visita, Ganador 
+            SELECT ID_Juego, ID_Equipo_Casa, ID_Equipo_Visitante, ID_Ganador 
             FROM Juego 
-            WHERE ID_Equipo_Casa = ? OR ID_Equipo_Visita = ? 
-            ORDER BY Juego_Num
+            WHERE ID_Equipo_Casa = ? OR ID_Equipo_Visitante = ? 
+            ORDER BY ID_Juego
             """;
 
         try (Connection conn = getConnection();
@@ -515,10 +544,10 @@ public class DatabaseManager {
             ps.setString(2, idEquipo);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    String id = rs.getString("ID_Juego");
+                    int id = rs.getInt("ID_Juego");
                     String idCasa = rs.getString("ID_Equipo_Casa");
-                    String idVisita = rs.getString("ID_Equipo_Visita");
-                    String ganador = rs.getString("Ganador");
+                    String idVisita = rs.getString("ID_Equipo_Visitante");
+                    String ganador = rs.getString("ID_Ganador");
 
                     Equipo casa = obtenerEquipoPorId(idCasa);
                     Equipo visita = obtenerEquipoPorId(idVisita);
@@ -539,7 +568,7 @@ public class DatabaseManager {
         return lista;
     }
 
-    // ======================= CRUD de LESIÓN =======================
+    // ======================= CRUD de LESIï¿½N =======================
     public static String obtenerProximoIdLesion() {
         String consulta = "SELECT MAX(Lesion_Num) FROM Lesion";
         try (Connection conn = getConnection();
@@ -575,7 +604,7 @@ public class DatabaseManager {
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Error al registrar lesión: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Error al registrar lesiï¿½n: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
     }
@@ -595,7 +624,7 @@ public class DatabaseManager {
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Error al actualizar lesión: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Error al actualizar lesiï¿½n: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
     }
@@ -626,7 +655,7 @@ public class DatabaseManager {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Error al obtener lesión: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Error al obtener lesiï¿½n: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
         return null;
     }
@@ -692,7 +721,7 @@ public class DatabaseManager {
         return lista;
     }
 
-    // ======================= MÉTODOS AUXILIARES =======================
+    // ======================= Mï¿½TODOS AUXILIARES =======================
     private static String obtenerProximoId(String tabla, String prefijo) {
         String consulta = "SELECT MAX(" + tabla + "_Num) FROM " + tabla;
         try (Connection conn = getConnection();
@@ -715,7 +744,7 @@ public class DatabaseManager {
         try {
             BufferedImage img = ImageIO.read(archivo);
             if (img == null) {
-                JOptionPane.showMessageDialog(null, "El archivo no es una imagen válida.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "El archivo no es una imagen vï¿½lida.", "Error", JOptionPane.ERROR_MESSAGE);
                 return null;
             }
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -736,7 +765,7 @@ public class DatabaseManager {
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Error en operación: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Error en operaciï¿½n: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
     }

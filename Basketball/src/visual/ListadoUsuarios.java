@@ -23,6 +23,7 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 import logico.Jugador;
@@ -140,6 +141,18 @@ public class ListadoUsuarios extends JDialog {
 		model.setColumnIdentifiers(columnNames);
 
 		table = new JTable(model);
+		table = new JTable(model);
+        table.setRowHeight(20); // alto de fila
+		//Centrar todo el texto de las celdas
+		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+		centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+		for (int i = 0; i < table.getColumnCount(); i++) {
+		    // Si la columna es de imagen, usa otro renderer
+		    if (i != 2) { 
+		        table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+		    }
+		}
+		
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		table.addMouseListener(new MouseAdapter() {
 			@Override

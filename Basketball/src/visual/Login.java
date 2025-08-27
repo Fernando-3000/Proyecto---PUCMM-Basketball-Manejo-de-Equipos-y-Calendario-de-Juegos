@@ -65,6 +65,11 @@ public class Login extends JDialog {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
 		setContentPane(contentPane);
+		
+		//Titulo
+		setTitle("Inicio de Sesión");
+		//Icono de ventana (pelota basketball)
+		setIconImage(new javax.swing.ImageIcon("src/recursos/Basketball(LogoPrograma).png").getImage());
 
 		JPanel panel = new JPanel();
 		contentPane.add(panel, BorderLayout.CENTER);

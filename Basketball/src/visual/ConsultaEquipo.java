@@ -17,6 +17,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
+import javax.swing.ImageIcon;
 
 import SQL.DatabaseManager;
 import logico.Equipo;
@@ -207,25 +208,19 @@ public class ConsultaEquipo extends JDialog {
      * Muestra la imagen del logo escalada correctamente
      */
     private void mostrarImagen(BufferedImage imagen) {
-        panel.removeAll();
-        panel.setLayout(new BorderLayout());
-
-        try {
-            Image scaled = imagen.getScaledInstance(
-                panel.getWidth() - 10,
-                panel.getHeight() - 10,
-                Image.SCALE_SMOOTH
-            );
-            JLabel label = new JLabel(new String()); // 
-            label.setHorizontalAlignment(SwingConstants.CENTER);
-            label.setVerticalAlignment(SwingConstants.CENTER);
-            panel.add(label, BorderLayout.CENTER);
-        } catch (Exception e) {
-            JLabel label = new JLabel("Error al cargar", SwingConstants.CENTER);
-            panel.add(label, BorderLayout.CENTER);
-        }
-
-        panel.revalidate();
-        panel.repaint();
-    }
+		panel.removeAll();
+		panel.setLayout(new BorderLayout());
+		try {
+			Image scaled = imagen.getScaledInstance(panel.getWidth() - 2, panel.getHeight() - 2, Image.SCALE_SMOOTH);
+	        JLabel label = new JLabel(new ImageIcon(scaled));
+	        label.setHorizontalAlignment(SwingConstants.CENTER);
+	        label.setVerticalAlignment(SwingConstants.CENTER);
+	        panel.add(label, BorderLayout.CENTER);
+		} catch (Exception e) {
+			JLabel label = new JLabel("Error al cargar", SwingConstants.CENTER);
+			panel.add(label, BorderLayout.CENTER);
+		}
+		panel.revalidate();
+		panel.repaint();
+	}
 }

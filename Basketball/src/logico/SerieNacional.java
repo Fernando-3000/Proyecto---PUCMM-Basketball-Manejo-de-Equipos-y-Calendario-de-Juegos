@@ -95,7 +95,7 @@ public class SerieNacional implements Serializable {
         return generadorLesion++;
     }
 
-    // Métodos de búsqueda
+    // Mï¿½todos de bï¿½squeda
 
     public Equipo searchEquipoById(String id) {
         for (Equipo equipo : misEquipos) {
@@ -115,9 +115,9 @@ public class SerieNacional implements Serializable {
         return null;
     }
 
-    public Juego searchJuegoById(String id) {
+    public Juego searchJuegoById(int id) {
         for (Juego juego : misJuegos) {
-            if (juego.getId().equals(id)) {
+            if (juego.getId() == id) {
                 return juego;
             }
         }
@@ -144,7 +144,7 @@ public class SerieNacional implements Serializable {
         return null;
     }
 
-    // Métodos de modificación (para uso en memoria, aunque ahora se usa DatabaseManager)
+    // Mï¿½todos de modificaciï¿½n (para uso en memoria, aunque ahora se usa DatabaseManager)
 
     public void modificarEquipo(Equipo aux) {
         Equipo equipo = searchEquipoById(aux.getId());
@@ -194,7 +194,7 @@ public class SerieNacional implements Serializable {
         }
     }
 
-    // Métodos de usuario
+    // Mï¿½todos de usuario
 
     public User buscarUser(String userName) {
         for (User user : misUsers) {
@@ -223,7 +223,7 @@ public class SerieNacional implements Serializable {
         loginUser = user;
     }
 
-    // Generar juegos (solo en memoria, aunque ahora se usa en combinación con DatabaseManager)
+    // Generar juegos (solo en memoria, aunque ahora se usa en combinaciï¿½n con DatabaseManager)
     public static ArrayList<Juego> generarJuegos(ArrayList<Equipo> equipos) {
         ArrayList<Juego> juegos = new ArrayList<>();
 
@@ -234,7 +234,7 @@ public class SerieNacional implements Serializable {
         for (int i = 0; i < equipos.size(); i++) {
             for (int j = 0; j < equipos.size(); j++) {
                 if (i != j) {
-                    String id = "JG-" + (juegos.size() + 1);
+                    int id = juegos.size() + 1;
                     juegos.add(new Juego(id, equipos.get(i), equipos.get(j)));
                 }
             }
