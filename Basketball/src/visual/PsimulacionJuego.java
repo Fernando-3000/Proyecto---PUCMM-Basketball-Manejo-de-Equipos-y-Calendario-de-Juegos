@@ -223,7 +223,7 @@ public class PsimulacionJuego extends JDialog {
 		btnLesion = crearBotonAccion("Lesión", 488, 119, panelAcciones);
 
 		// Modelos de tabla
-		modelE1 = new DefaultTableModel(new String[] { "ID", "Nombre", "Posición", "Número", "Foto" }, 0) {
+		modelE1 = new DefaultTableModel(new String[] {"Nombre", "Posición", "Número", "Foto" }, 0) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
 				return false;
@@ -233,13 +233,13 @@ public class PsimulacionJuego extends JDialog {
 			public Class<?> getColumnClass(int columnIndex) {
 				// Si la columna es la imagen del jugador devolvera como icono imagen del
 				// jugador
-				if (columnIndex == 4) {
+				if (columnIndex == 3) {
 					return ImageIcon.class;
 				}
 				return String.class;
 			}
 		};
-		modelE2 = new DefaultTableModel(new String[] { "ID", "Nombre", "Posición", "Número", "Foto" }, 0) {
+		modelE2 = new DefaultTableModel(new String[] {"Nombre", "Posición", "Número", "Foto" }, 0) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
 				return false;
@@ -249,7 +249,7 @@ public class PsimulacionJuego extends JDialog {
 			public Class<?> getColumnClass(int columnIndex) {
 				// Si la columna es la imagen del jugador devolvera como icono imagen del
 				// jugador
-				if (columnIndex == 4) {
+				if (columnIndex == 3) {
 					return ImageIcon.class;
 				}
 				return String.class;
@@ -293,7 +293,6 @@ public class PsimulacionJuego extends JDialog {
 	}
 
 	private void registrarAccion(String accion) {
-		System.out.println("registrar accion");
 		if (jugadorSeleccionado == null)
 			return;
 
@@ -482,8 +481,8 @@ public class PsimulacionJuego extends JDialog {
 
 		tableE1 = new JTable(modelE1);
 		tableE1.setRowHeight(30);// Altura
-		tableE1.getColumnModel().getColumn(3).setPreferredWidth(15);// Anchura Numero Jugador
-		tableE1.getColumnModel().getColumn(4).setPreferredWidth(50);// Anchura imagen
+		tableE1.getColumnModel().getColumn(2).setPreferredWidth(15);// Anchura Numero Jugador
+		tableE1.getColumnModel().getColumn(3).setPreferredWidth(50);// Anchura imagen
 		// Centrar todo el texto de las celdas
 		DefaultTableCellRenderer centerRenderer1 = new DefaultTableCellRenderer();
 		centerRenderer1.setHorizontalAlignment(JLabel.CENTER);
@@ -501,9 +500,8 @@ public class PsimulacionJuego extends JDialog {
 
 		tableE2 = new JTable(modelE2);
 		tableE2.setRowHeight(30); // Altura
-		tableE2.getColumnModel().getColumn(3).setPreferredWidth(15);// Anchura Numero Jugador
-		tableE2.getColumnModel().getColumn(4).setPreferredWidth(50); // Anchura imagen
-		tableE2.removeColumn(tableE1.getColumnModel().getColumn(0)); // Ocultar la columna de ID (no hace falta mostrarlo, pero lo deje por funcionalidad)
+		tableE2.getColumnModel().getColumn(2).setPreferredWidth(15);// Anchura Numero Jugador
+		tableE2.getColumnModel().getColumn(3).setPreferredWidth(50); // Anchura imagen
 		// Centrar todo el texto de las celdas
 		DefaultTableCellRenderer centerRenderer2 = new DefaultTableCellRenderer();
 		centerRenderer2.setHorizontalAlignment(JLabel.CENTER);
@@ -551,15 +549,15 @@ public class PsimulacionJuego extends JDialog {
 		ArrayList<Jugador> jugadores = DatabaseManager.listarJugadoresDeEquipo(aux.getId());
 		for (Jugador j : jugadores) {
 			// if (j.getEstadoSalud()) {
-			row[0] = j.getId();
-			row[1] = j.getNombre() + " " + j.getApellido();
-			row[2] = j.getPosicion();
-			row[3] = j.getNumero();
+			//row[0] = j.getId();
+			row[0] = j.getNombre() + " " + j.getApellido();
+			row[1] = j.getPosicion();
+			row[2] = j.getNumero();
 			BufferedImage logo = j.getFotoBuffered();
 			if (logo != null) {
-				row[4] = new ImageIcon(logo.getScaledInstance(60, 40, java.awt.Image.SCALE_SMOOTH));
+				row[3] = new ImageIcon(logo.getScaledInstance(60, 40, java.awt.Image.SCALE_SMOOTH));
 			} else {
-				row[4] = null; // Imagen por defecto
+				row[3] = null; // Imagen por defecto
 			}
 			model.addRow(row);
 			// }

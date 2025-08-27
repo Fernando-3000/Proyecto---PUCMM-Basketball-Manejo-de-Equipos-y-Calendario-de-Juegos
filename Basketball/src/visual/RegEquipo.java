@@ -106,8 +106,14 @@ public class RegEquipo extends JDialog {
 			txtId = new JTextField();
 			txtId.setBounds(88, 13, 388, 22);
 			txtId.setEditable(false);
-			txtId.setText(DatabaseManager.obtenerProximoIdEquipo()); // utiliza el metodo para obtener y mostrar el
-																		// proximo ID
+			if (aux != null) {
+				txtId.setText(aux.getId());
+			} else {
+				txtId.setText(DatabaseManager.obtenerProximoIdEquipo());// utiliza el metodo para obtener y mostrar el
+			}
+
+			// proximo ID
+
 			txtId.setColumns(10);
 		}
 		{
@@ -313,13 +319,7 @@ public class RegEquipo extends JDialog {
 								operacion.setVisible(true);
 								operacion.setModal(true);
 							}
-						} else {// Para modificar equipo
-
-							if (selectedFile != null && !selectedFile.equals(aux.getImagenLogoFile())) {
-								File fotoGuardada = copiarImagenADirectorioApp(selectedFile, aux.getId());
-								aux.setImagenLogoFile(fotoGuardada);
-							}
-
+						} else { // Para modificar equipo
 							aux.setNombre(txtNombre.getText());
 							aux.setEntrenador(txtEntrenador.getText());
 							aux.setPais(cmbxPais.getSelectedItem() != null ? cmbxPais.getSelectedItem().toString()
@@ -327,13 +327,40 @@ public class RegEquipo extends JDialog {
 							aux.setAnoFundacion(Integer.parseInt(spnAnoFund.getValue().toString()));
 							aux.setDueno(txtDueno.getText());
 
-							SerieNacional.getInstance().modificarEquipo(aux);
-							ListadoEquipos.loadAll(null);
-							OperacionExitosa operacion = new OperacionExitosa();
-							operacion.setVisible(true);
-							operacion.setModal(true);
-							dispose();
+							File fotoGuardada = null;
+
+							// Caso 1 que se haya seleccionado un archivo nuevo
+							if (selectedFile != null) {
+								fotoGuardada = copiarImagenADirectorioApp(selectedFile, aux.getId());
+								aux.setImagenLogoFile(fotoGuardada);
+
+								// Caso 2 que no se haya seleccionado nada pero ya tenia logo antes
+							} else if (aux.getImagenLogoFile() != null) {
+								fotoGuardada = aux.getImagenLogoFile();
+
+								// Caso 3 no hay imagen previa ni nueva, por lo que queda queda null
+							} else {
+								fotoGuardada = null;
+							}
+
+							boolean modificado = DatabaseManager.modificarEquipo(aux.getId(), aux.getNombre(),
+									aux.getAnoFundacion(), aux.getPais(), aux.getEntrenador(), aux.getDueno(),
+									fotoGuardada);
+
+							if (modificado) {
+								ListadoEquipos.loadAll(null);
+								OperacionExitosa operacion = new OperacionExitosa();
+								operacion.setVisible(true);
+								operacion.setModal(true);
+								dispose();
+							} else {
+								OperacionEspecifica operacion = new OperacionEspecifica(
+										"No se pudo modificar el equipo");
+								operacion.setVisible(true);
+								operacion.setModal(true);
+							}
 						}
+
 					}
 				});
 				okButton.setActionCommand("OK");
@@ -403,26 +430,21 @@ public class RegEquipo extends JDialog {
 	 * Muestra la imagen seleccionada
 	 */
 	private void displayImage(File file) {
-		try {
-			ImageIcon icon = new ImageIcon(file.getPath());
-
-			if (icon.getIconWidth() > 200 || icon.getIconHeight() > 200) {
-				Image img = icon.getImage();
-				Image scaledImg = img.getScaledInstance(200, -1, Image.SCALE_SMOOTH);
-				icon = new ImageIcon(scaledImg);
-			}
-
-			imageDisplayLabel.setIcon(icon);
-			imageDisplayLabel.setText("");
-
-			photoLabel.setIcon(null);
-			photoLabel.setText("Arrastra una imagen aqui");
-		} catch (Exception e) {
-			e.printStackTrace();
-			imageDisplayLabel.setIcon(null);
-			imageDisplayLabel.setText("Error al cargar la imagen");
-		}
+	    try {
+	        ImageIcon icon = new ImageIcon(file.getPath());
+	        Image img = icon.getImage();
+	        Image scaledImg = img.getScaledInstance(imageDisplayLabel.getWidth(), 
+	                                                imageDisplayLabel.getHeight(),
+	                                                Image.SCALE_SMOOTH);
+	        imageDisplayLabel.setIcon(new ImageIcon(scaledImg));
+	        imageDisplayLabel.setText("");
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        imageDisplayLabel.setIcon(null);
+	        imageDisplayLabel.setText("Error al cargar la imagen");
+	    }
 	}
+
 
 	/**
 	 * Verifica si el archivo es una imagen
@@ -474,7 +496,7 @@ public class RegEquipo extends JDialog {
 			spnAnoFund.setValue(aux.getAnoFundacion());
 			BufferedImage imagen = aux.getImagenLogo();
 
-			if (selectedFile != null) {
+			if (imagen != null) {
 				mostrarImagenBuffered(imagen);
 			} else {
 				imageDisplayLabel.setIcon(null);
@@ -486,21 +508,18 @@ public class RegEquipo extends JDialog {
 
 	// Para mostrar la imagen en el panel
 	private void mostrarImagenBuffered(BufferedImage imagen) {
-		panel.removeAll();
-		panel.setLayout(new BorderLayout());
-		try {
-			Image scaled = imagen.getScaledInstance(panel.getWidth() - 2, panel.getHeight() - 2, Image.SCALE_SMOOTH);
-			JLabel label = new JLabel(new ImageIcon(scaled));
-			label.setHorizontalAlignment(SwingConstants.CENTER);
-			label.setVerticalAlignment(SwingConstants.CENTER);
-			panel.add(label, BorderLayout.CENTER);
-		} catch (Exception e) {
-			JLabel label = new JLabel("Error al cargar", SwingConstants.CENTER);
-			panel.add(label, BorderLayout.CENTER);
-		}
-		panel.revalidate();
-		panel.repaint();
+	    try {
+	        Image scaled = imagen.getScaledInstance(imageDisplayLabel.getWidth(), 
+	                                                imageDisplayLabel.getHeight(), 
+	                                                Image.SCALE_SMOOTH);
+	        imageDisplayLabel.setIcon(new ImageIcon(scaled));
+	        imageDisplayLabel.setText("");
+	    } catch (Exception e) {
+	        imageDisplayLabel.setIcon(null);
+	        imageDisplayLabel.setText("Error al cargar");
+	    }
 	}
+
 
 	private void clean() {
 		txtId.setText(DatabaseManager.obtenerProximoIdEquipo());
